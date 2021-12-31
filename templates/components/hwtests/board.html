@@ -1,0 +1,38 @@
+<h1><center>{{board_name}}</center></h1>
+<table class="table">
+    <thead>
+      <tr>
+        {% for item in boards[0] %}
+        <th scope="col">{{item}}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for board in boards %}
+      <tr>
+        {% for k,v in board.items() %}
+          {% if k== "Status" %}
+            {% if v=="Pass" %}
+              <td><span>&#9989;</span></td>
+            {% else %}
+              <td><span>&#10060;</span></td>
+            {% endif %}
+          {% elif k in ["Linux Tests"] %}
+            <td style="font-size: small">
+              dmesg errors <br><span class="badge rounded-pill bg-danger">{{v.dmesg_errors}}</span><br>
+              missing drivers <br><span class="badge rounded-pill bg-danger">{{v.drivers_missing}}</span>
+            </td>
+            {% elif k in ["pyadi Tests"] %}
+            <td style="font-size: small">
+              pass <br><span class="badge rounded-pill bg-success">{{v.pass}}</span><br>
+              fail <br><span class="badge rounded-pill bg-danger">{{v.fail}}</span>
+            </td>
+          {% else %}
+            <td>{{v}}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
