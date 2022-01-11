@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/">Constellation</a>
+    <a class="navbar-brand" href="{{url_for('hello_world')}}/">Constellation</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -8,50 +8,38 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="/boards">HW Pipeline</a>
+          <a class="nav-link active" aria-current="page" href="{{url_for('hello_world')}}/boards">HW Pipeline</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="/queue">Jenkins Queue</a>
+          <a class="nav-link active" aria-current="page" href="{{url_for('hello_world')}}/queue">Jenkins Queue</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="/chw">Current HW</a>
+          <a class="nav-link active" aria-current="page" href="{{url_for('hello_world')}}/chw">Current HW</a>
         </li>
 
-
-        <li class="nav-item dropdown">
-          <a class="nav-item nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-            data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="dropdown show">
+          <a class="nav-item nav-link dropdown-toggle" href="#" role="button" id="kibanaNavbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Kibana
           </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li>
-              <a class="dropdown-item" aria-current="page" href="/kibana/kibana_multi_config_test_last_24">MCT</a>
-            </li>
-            <li>
-              <a class="dropdown-item" aria-current="page" href="/kibana/kibana_hardware_test_last_24">HWT</a>
-            </li>
-          </ul>
-        </li>
+        
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <a class="dropdown-item" aria-current="page" href="{{url_for('hello_world')}}/kibana/kibana_multi_config_test_last_24">MCT</a>
+            <a class="dropdown-item" aria-current="page" href="{{url_for('hello_world')}}/kibana/kibana_hardware_test_last_24">HWT</a>
+          </div>
+        </div>
 
-        <li class="nav-item dropdown">
-          <a class="nav-item nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-            data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="dropdown show">
+          <a class="nav-item nav-link dropdown-toggle" href="#" role="button" id="projectsNavbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Projects
           </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li>
-              <a class="dropdown-item" aria-current="page" href="/pyadi-iio/all">PyADI-IIO</a>
-            </li>
-            <li>
-              <a class="dropdown-item" aria-current="page" href="/trx-toolbox">Transceiver Toolbox</a>
-            </li>
-            <li>
-              <a class="dropdown-item" aria-current="page" href="/hsx-toolbox">HSX Toolbox</a>
-            </li>
-          </ul>
-        </li>
-
+        
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <a class="dropdown-item" aria-current="page" href="{{url_for('hello_world')}}/pyadi-iio/all">PyADI-IIO</a>
+            <a class="dropdown-item" aria-current="page" href="{{url_for('hello_world')}}/trx-toolbox">Transceiver Toolbox</a>
+            <a class="dropdown-item" aria-current="page" href="{{url_for('hello_world')}}/hsx-toolbox">HSX Toolbox</a>
+          </div>
+        </div>
 
       </ul>
     </div>
