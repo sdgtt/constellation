@@ -1,0 +1,35 @@
+
+<!-- <div class="progress">
+    <div class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: {{ summary['Passing Percent']}}%" aria-valuenow="{{ summary['Passing Percent']}}" aria-valuemin="0" aria-valuemax="100">Passing {{ summary['Passing']}}</div>
+</div>
+<div class="progress">
+    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: {{ summary['Online Percent']}}%" aria-valuenow="{{ summary['Online Percent']}}" aria-valuemin="0" aria-valuemax="100">Online {{ summary['Online'] }}</div>
+</div>
+<div class="progress">
+    <div class="progress-bar progress-bar-striped bg-info" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">Total Boards {{ summary['Total Boards'] }}</div>
+</div> -->
+
+<div class="bg-light bg-gradient">
+    <br>
+    <h1 class="display-6">LATEST BUILD SUMMARY</h1>
+    <br>
+    <dl class="row h5">
+        <dt class="col-sm-2 text-truncate">Jenkins Project Name</dt>
+        <dd class="col-sm-3 text-muted">{{ boards[0]["Jenkins Project Name"] }}</dd>
+        <dt class="col-sm-3 text-truncate">Artifactory source branch</dt>
+        <dd class="col-sm-1 text-muted">{{ boards[0]["Artifactory source branch"] }}</dd>
+    </dl>
+    <dl class="row h5">
+        <dt class="col-sm-2 text-truncate">Total Boards</dt>
+        <dd class="col-sm-3 text-muted">{{ summary["Total Boards"] }}</dd>
+        <dt class="col-sm-3 text-truncate">Depracated</dt>
+        <dd class="col-sm-1 text-muted">{{ summary["Depracated"] }}</dd>
+    </dl>
+    <dl class="row h5">
+        <dt class="col-sm-2 text-truncate">Online</dt>
+        <dd class="col-sm-3 text-muted">{{ summary["Online"] }}</dd>
+        <dt class="col-sm-3 text-truncate">Passing</dt>
+        <dd class="col-sm-1 text-muted">{{ summary["Passing"] }}</dd>
+    </dl>
+    <br>
+</div>

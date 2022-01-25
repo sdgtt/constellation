@@ -1,10 +1,6 @@
 from models.data_types import BoardStatus
 from models.boot_tests import BootTest
-import secrets
-import telemetry
-
-MODE = "elastic"
-ELASTIC_SERVER="192.168.10.1"
+from models.db import DB
 
 class Board(BootTest):
     def __init__(self, board_name, latest_boot_test=None):
@@ -42,15 +38,26 @@ class Board(BootTest):
     def display(self):
         return self.__dict__
 
-    
-
 class Boards:
-    def __init__(self, jenkins_project_name=None):
-        
-        db_res = telemetry.searches(mode=MODE, server=ELASTIC_SERVER)
-        # create boards object from raw db_res
-        boot_folder_name = None
-        self._boards = [ Board(bn, bi[0]) for bn, bi in db_res.boot_tests(boot_folder_name, jenkins_project_name).items() ]
+    def __init__(self, jenkins_project_name=None, source_adjacency_matrix=None, depracated=[]):
+        self._boards = []
+        self.db = DB()
+        #get list of boards
+        boards = self.db.search(
+            agg_field='boot_folder_name',
+            jenkins_project_name=jenkins_project_name,
+            source_adjacency_matrix=source_adjacency_matrix
+        )['aggregates']
+        # create boards object from latest boot of that board
+        for board in boards:
+            latest_board_boot_result = self.db.search(
+                size=1,
+                jenkins_project_name=jenkins_project_name,
+                source_adjacency_matrix=source_adjacency_matrix,
+                boot_folder_name=board
+            )
+            if not board in depracated:
+                self._boards.append(Board(board, latest_board_boot_result['hits'][0]))
 
     @property
     def boards(self):

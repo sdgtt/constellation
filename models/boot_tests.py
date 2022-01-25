@@ -1,8 +1,4 @@
-import secrets
-import telemetry
-
-MODE = "elastic"
-ELASTIC_SERVER="192.168.10.1"
+from models.db import DB
 
 class BootTest:
     def __init__(self, raw_boot_test_result=None):
@@ -32,6 +28,7 @@ class BootTest:
             "jenkins_build_number",
             "jenkins_project_name",
             "jenkins_agent",
+            "jenkins_trigger",
             "source_adjacency_matrix",
             "pytest_errors",
             "pytest_failures",
@@ -44,7 +41,10 @@ class BootTest:
         if self.raw_boot_test_result:
             for f in fields:
                 if f in self.raw_boot_test_result.keys():
-                    setattr(self, f, self.raw_boot_test_result[f])
+                    v = self.raw_boot_test_result[f]
+                    if f in ['hdl_hash', 'linux_hash', 'boot_partition_hash']:
+                        v = v.split('(')[0].strip()
+                    setattr(self, f, v)
                 else:
                     if f in ["drivers_enumerated", 
                             "drivers_missing", 
@@ -107,23 +107,34 @@ class BootTest:
         return self.__dict__
 
 class BoardBootTests:
-    def __init__(self, boot_folder_name, jenkins_project_name=None):
+    def __init__(self, boot_folder_name, jenkins_project_name=None, filters=None):
 
         if not boot_folder_name:
             raise ValueError('boot_folder_name must not be null or empty')
         
-        db_res = telemetry.searches(mode=MODE, server=ELASTIC_SERVER)
+        self.db = DB()
+        db_res = self.db.search(
+            boot_folder_name=boot_folder_name,
+            jenkins_project_name=jenkins_project_name
+        )
         # create boards object from raw db_res
-        self._boot_tests = [ BootTest(res_dict) for res_dict in db_res.boot_tests(boot_folder_name, jenkins_project_name)[boot_folder_name] ]
+        self._boot_tests = [ BootTest(row) for row in db_res['hits'] ]
+
+        if filters:
+            for field, values in filters.items():
+                filtered_boot_tests = []
+                for _boot_test in self._boot_tests:
+                    if getattr(_boot_test, field, '') in values:
+                        filtered_boot_tests.append(_boot_test)
+                self._boot_tests = filtered_boot_tests
 
     @property
     def boot_tests(self):
         return self._boot_tests
 
-if __name__ == "__main__":
-    # b = Board("test")
-    # print(b.__dict__)
-    # b.status = "invalid"
-    # assert b.status == BoardStatus.LINUX_READY
-    B = BoardBootTests('zynq-zed-adv7511-ad9361-fmcomms2-3')
-    print([bt.display() for bt in B.boot_tests])
+    @property
+    def boot_tests_dict(self):
+        self._boot_tests_dict = []
+        for bt in self._boot_tests:
+            self._boot_tests_dict.append(bt.display())
+        return self._boot_tests_dict
