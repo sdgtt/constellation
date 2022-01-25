@@ -15,7 +15,7 @@ JENKINS_SERVER = '10.116.171.86'
 JENKINS_PORT = None
 BASE_PATH='/constellation'
 
-@app.route(BASE_PATH+'/', endpoint='hello_world_alt')
+@app.route(BASE_PATH+'/')
 @app.route(BASE_PATH)
 def hello_world():
     return render_template("index.html")
