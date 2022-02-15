@@ -2,9 +2,18 @@
 
 {% block content %}
 
+<div id="index-container">
+
+<div id="sdg_logo">
+{{ sdg_logo }}
+</div>
+
 Welcome to the SDG board farm dashboard known as Constellation
-
+<br>
+<div id="orion">
 <img src="{{url_for('static', filename='orion.png')}}" style="height: 50%; width: 10%" align="middle" />
+</div>
 
+</div>
 
 {% endblock %}

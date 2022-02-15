@@ -1,0 +1,154 @@
+.squiggle {
+  stroke-dasharray: 450;
+  stroke-dashoffset: 450;
+  animation: draw 5s linear forwards;
+}
+
+.S {
+  stroke-dasharray: 450;
+  stroke-dashoffset: 450;
+  animation: draw 5s linear forwards;
+}
+
+.D {
+  stroke-dasharray: 450;
+  stroke-dashoffset: 450;
+  animation: draw 5s linear forwards, filler 5s linear forwards;
+  /* animation: filler 5s linear forwards; */
+}
+
+.square {
+  stroke-dasharray: 450;
+  stroke-dashoffset: 450;
+  animation: filler 5s linear forwards;
+}
+
+@keyframes draw2 {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+
+  /* 0% {
+        fill: rgb(255, 114, 0, 0);
+    }
+
+    50% {
+        fill: rgb(255, 114, 0, 50);
+    }
+
+    100% {
+        fill: rgb(255, 114, 0, 100);
+    } */
+}
+
+@keyframes filler {
+  0% {
+    fill: rgb(255, 114, 0, 0);
+  }
+
+  50% {
+    fill: rgb(255, 114, 0, 50);
+  }
+
+  100% {
+    fill: rgb(255, 114, 0, 100);
+  }
+}
+
+@keyframes starts {
+  0% {
+    stop-color: rgb(0, 0, 0, 0.1);
+  }
+
+  10% {
+    stop-color: rgb(0, 0, 0, 0.2);
+  }
+
+  20% {
+    stop-color: rgb(0, 0, 0, 0.3);
+  }
+
+  30% {
+    stop-color: rgb(0, 0, 0, 0.4);
+  }
+
+  40% {
+    stop-color: rgb(0, 0, 0, 0.5);
+  }
+
+  50% {
+    stop-color: rgb(0, 0, 0, 0.6);
+  }
+
+  60% {
+    stop-color: rgb(0, 0, 0, 0.7);
+  }
+
+  70% {
+    stop-color: rgb(0, 0, 0, 0.8);
+  }
+
+  80% {
+    stop-color: rgb(0, 0, 0, 0.9);
+  }
+
+  90% {
+    stop-color: rgb(0, 0, 0, 1);
+  }
+
+  100% {
+    stop-color: rgb(0, 0, 0, 1);
+  }
+}
+
+@keyframes stops {
+  0% {
+    stop-color: rgb(0, 0, 0, 0);
+  }
+
+  10% {
+    stop-color: rgb(0, 0, 0, 0.1);
+  }
+
+  20% {
+    stop-color: rgb(0, 0, 0, 0.2);
+  }
+
+  30% {
+    stop-color: rgb(0, 0, 0, 0.3);
+  }
+
+  40% {
+    stop-color: rgb(0, 0, 0, 0.4);
+  }
+
+  50% {
+    stop-color: rgb(0, 0, 0, 0.5);
+  }
+
+  60% {
+    stop-color: rgb(0, 0, 0, 0.6);
+  }
+
+  70% {
+    stop-color: rgb(0, 0, 0, 0.7);
+  }
+
+  80% {
+    stop-color: rgb(0, 0, 0, 0.8);
+  }
+
+  90% {
+    stop-color: rgb(0, 0, 0, 0.9);
+  }
+
+  100% {
+    stop-color: rgb(0, 0, 0, 1);
+  }
+}
