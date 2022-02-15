@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, Markup
 from pages.hwtests import allboards as ab
 from pages.pyadi.plots import gen_line_plot_html
 from models import boards as b
@@ -18,7 +18,8 @@ BASE_PATH='/constellation'
 @app.route(BASE_PATH+'/')
 @app.route(BASE_PATH)
 def hello_world():
-    return render_template("index.html")
+    svg = open('static/sdg.svg').read()
+    return render_template("index.html", sdg_logo=Markup(svg))
 
 
 # @app.route("/report")
