@@ -4,10 +4,12 @@ from flask import Flask, Markup, jsonify, render_template, request, send_from_di
 from models import boards as b
 from models import boot_tests as bt
 from models.db import DB
+from models.score import Score
 from pages.hwtests import allboards as ab
 from pages.publicci.dashboard import Dashboard
 from pages.pyadi.plots import gen_line_plot_html
-from utility import artifact_url_gen, filter_gen, url_gen
+from urllib.parse import urlparse, unquote
+from utility import url_gen, filter_gen, artifact_url_gen
 
 # from junit2htmlreport import parser
 
@@ -81,18 +83,44 @@ def board_api(board_name, param=None):
     jenkins_project_name = "HW_tests/HW_test_multiconfig"
     filters = filter_gen(urlparse(request.url).query)
     boot_tests = bt.BoardBootTests(
-        board_name, jenkins_project_name, filters
+        boot_folder_name=board_name,
+        jenkins_project_name=jenkins_project_name, 
+        filters=filters
     ).boot_tests_dict
-    for boot_test in boot_tests:
-        new_dict = {
-            k: v
-            for k, v in boot_test.items()
-            if k not in ["boot_test_failure", "raw_boot_test_result"]
-        }
-
+    for index,boot_test in enumerate(boot_tests):
+        new_dict = {}
+        for k,v in boot_test.items():
+            if not k in ["boot_test_failure", "raw_boot_test_result"]:
+                new_dict.update({k:v})
         boot_test_filtered.append(new_dict)
     return {"hits": boot_test_filtered}
 
+
+@app.route("{}/api/sc/".format(BASE_PATH))
+@app.route("{}/api/sc/<param>".format(BASE_PATH))
+def score_api(param=None):
+    default_jenkins_project = "HW_tests/HW_test_multiconfig"
+    default_branch = "boot_partition_master"
+    default_size = 7
+    filters = filter_gen(urlparse(unquote(request.url)).query)
+    jenkins_project = filters['jenkins_project'][0] if 'jenkins_project' in filters else default_jenkins_project
+    size = filters['size'][0] if 'size' in filters else default_size
+    board = filters['board'][0] if 'board' in filters else None
+    branch = filters['branch'][0] if 'branch' in filters else default_branch
+    depracated = [
+        "zynq-zed-adv7511-adrv9002",
+        "zynqmp-zcu102-rev10-adrv9002",
+        "zynq-adrv9364-z7020-bob-vcmos",
+        "zynq-adrv9364-z7020-bob-vlvds"
+    ]
+    sc = Score(
+        jenkins_project=jenkins_project,
+        size=int(size),
+        branch=branch,
+        board=board,
+        depracated=depracated
+    )
+    return sc.to_json()
 
 @app.route("{}/boards".format(BASE_PATH))
 def allboards():
@@ -162,7 +190,11 @@ def board(board_name, param=None):
     # filter by jenkins_project_name
     jenkins_project_name = "HW_tests/HW_test_multiconfig"
     filters = filter_gen(urlparse(request.url).query)
-    boot_tests = bt.BoardBootTests(board_name, jenkins_project_name, filters).boot_tests
+    boot_tests = bt.BoardBootTests(
+        boot_folder_name=board_name,
+        jenkins_project_name=jenkins_project_name,
+        filters=filters
+    ).boot_tests
     boards = [
         {
             "Jenkins Job Date": test.jenkins_job_date,
