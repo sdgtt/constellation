@@ -1,16 +1,16 @@
 <table class="table">
-  <thead class="table-white"> 
+  <thead class="table-white">
     <tr>
       {% for item in boards[0] %}
         {% if item in [
                   "url",
-                  "Jenkins Project Name", 
+                  "Jenkins Project Name",
                   "Artifactory source branch"
-                  ] 
+                  ]
         %}
           <!-- do nothing -->
         {% if item in ["Status"]%}
-          
+
         {% endif %}
         {% else %}
           <th scope="col">{{item}}</th>
@@ -84,7 +84,7 @@
           "url",
           "Jenkins Project Name",
           "Artifactory source branch"
-          ] 
+          ]
         %}
             <!-- do nothing -->
         {% else %}

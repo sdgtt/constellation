@@ -17,7 +17,7 @@ jobs:
         run: |
           sudo apt-get install -y python3-pip python3-setuptools
           pip install -r requirements_dev.txt
-          
+
       - name: Lint
         run: |
           pre-commit run --all-files 2> /dev/null

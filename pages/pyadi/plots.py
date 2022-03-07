@@ -1,4 +1,3 @@
-
 import plotly.express as px
 
 plotlycdn = '<script src="https://cdn.plot.ly/plotly-2.0.0.js"></script>'
