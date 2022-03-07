@@ -1,24 +1,26 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory, Markup
-from pages.hwtests import allboards as ab
-from pages.pyadi.plots import gen_line_plot_html
+from urllib.parse import unquote, urlparse
+
+from flask import Flask, Markup, jsonify, render_template, request, send_from_directory
 from models import boards as b
 from models import boot_tests as bt
 from models.db import DB
-from utility import url_gen, filter_gen, artifact_url_gen
-from urllib.parse import urlparse, unquote
+from pages.hwtests import allboards as ab
+from pages.pyadi.plots import gen_line_plot_html
+from utility import artifact_url_gen, filter_gen, url_gen
 
 # from junit2htmlreport import parser
 
 app = Flask(__name__)
 
-JENKINS_SERVER = '10.116.171.86'
+JENKINS_SERVER = "10.116.171.86"
 JENKINS_PORT = None
-BASE_PATH='/constellation'
+BASE_PATH = "/constellation"
 
-@app.route(BASE_PATH+'/')
+
+@app.route(BASE_PATH + "/")
 @app.route(BASE_PATH)
 def hello_world():
-    svg = open('static/sdg.svg').read()
+    svg = open("static/sdg.svg").read()
     return render_template("index.html", sdg_logo=Markup(svg))
 
 
@@ -31,28 +33,24 @@ def hello_world():
 @app.route("{}/api/<param>".format(BASE_PATH))
 def api(param=None):
     size = 10000
-    order = 'desc'
+    order = "desc"
     agg_field = None
     kwargs = {}
     filters = filter_gen(urlparse(unquote(request.url)).query)
-    for f,v in filters.items():
-        if isinstance(v,list):
+    for f, v in filters.items():
+        if isinstance(v, list):
             for el in v:
-                if f == 'size':
+                if f == "size":
                     size = int(el)
-                elif f == 'order':
+                elif f == "order":
                     order = el
-                elif f =='agg_field':
+                elif f == "agg_field":
                     agg_field = el
                 else:
                     kwargs.update({f: el})
-    result_json =  DB().search(
-                    size=size,
-                    order=order,
-                    agg_field=agg_field,
-                    **kwargs
-                )
+    result_json = DB().search(size=size, order=order, agg_field=agg_field, **kwargs)
     return result_json
+
 
 @app.route("{}/api/board/<board_name>/".format(BASE_PATH))
 @app.route("{}/api/board/<board_name>/<param>".format(BASE_PATH))
@@ -60,28 +58,35 @@ def board_api(board_name, param=None):
     boot_test_filtered = []
     jenkins_project_name = "HW_tests/HW_test_multiconfig"
     filters = filter_gen(urlparse(request.url).query)
-    boot_tests = bt.BoardBootTests(board_name, jenkins_project_name, filters).boot_tests_dict
-    for index,boot_test in enumerate(boot_tests):
-        new_dict = {}
-        for k,v in boot_test.items():
-            if not k in ["boot_test_failure", "raw_boot_test_result"]:
-                new_dict.update({k:v})
+    boot_tests = bt.BoardBootTests(
+        board_name, jenkins_project_name, filters
+    ).boot_tests_dict
+    for boot_test in boot_tests:
+        new_dict = {
+            k: v
+            for k, v in boot_test.items()
+            if k not in ["boot_test_failure", "raw_boot_test_result"]
+        }
+
         boot_test_filtered.append(new_dict)
-    return ({ "hits" : boot_test_filtered})
+    return {"hits": boot_test_filtered}
+
 
 @app.route("{}/boards".format(BASE_PATH))
 def allboards():
-    #retrieve boards from elastic server
-    #filter by jenkins_project_name
+    # retrieve boards from elastic server
+    # filter by jenkins_project_name
     jenkins_project_name = "HW_tests/HW_test_multiconfig"
     source_adjacency_matrix = "boot_partition_master"
-    depracated = [
+    deprecated = [
         "zynq-zed-adv7511-adrv9002",
         "zynqmp-zcu102-rev10-adrv9002",
         "zynq-adrv9364-z7020-bob-vcmos",
-        "zynq-adrv9364-z7020-bob-vlvds"
+        "zynq-adrv9364-z7020-bob-vlvds",
     ]
-    boards_ref = b.Boards(jenkins_project_name, source_adjacency_matrix, depracated).boards
+    boards_ref = b.Boards(
+        jenkins_project_name, source_adjacency_matrix, deprecated
+    ).boards
     headers = ["Board", "Status"]
     boards = [
         {
@@ -92,79 +97,93 @@ def allboards():
             "Artifactory source branch": board.source_adjacency_matrix,
             "HDL Commit": board.hdl_hash,
             "Linux Commit": board.linux_hash,
-            "Status" : {
+            "Status": {
                 "Online": board.is_online,
                 "Status": board.boot_test_result,
-                "Failure reason": 'None' if len(board.boot_test_failure) == 0 \
-                else board.boot_test_failure
+                "Failure reason": "None"
+                if len(board.boot_test_failure) == 0
+                else board.boot_test_failure,
             },
             "Action": "NA",
-            "url" : url_gen(
+            "url": url_gen(
                 JENKINS_SERVER,
                 JENKINS_PORT,
                 board.jenkins_project_name,
                 board.jenkins_build_number,
                 board.board_name,
-                board.hdl_hash.split('\s')[0].strip(),
-                board.linux_hash.split('\s')[0].strip()
-            )
+                board.hdl_hash.split("\s")[0].strip(),
+                board.linux_hash.split("\s")[0].strip(),
+            ),
         }
         for board in boards_ref
     ]
 
     summary = {
         "Active Boards": len(boards),
-        "Passing" : len([ board for board in boards if board['Status']['Status'] == "Pass"]),
-        "Online" : len([ board for board in boards if board['Status']['Online'] == True]),
-        "Depracated" : len(depracated)
+        "Passing": len(
+            [board for board in boards if board["Status"]["Status"] == "Pass"]
+        ),
+        "Online": len([board for board in boards if board["Status"]["Online"]]),
+        "Deprecated": len(deprecated),
     }
-    summary.update({"Passing Percent":100*summary['Passing']/summary['Active Boards']})
-    summary.update({"Online Percent":100*summary['Online']/summary['Active Boards']})
-    return render_template("hwtests/allboards.html", headers=headers, boards=boards, summary=summary)
+    summary["Passing Percent"] = 100 * summary["Passing"] / summary["Active Boards"]
+
+    summary["Online Percent"] = 100 * summary["Online"] / summary["Active Boards"]
+    return render_template(
+        "hwtests/allboards.html", headers=headers, boards=boards, summary=summary
+    )
+
 
 @app.route("{}/board/<board_name>/".format(BASE_PATH))
 @app.route("{}/board/<board_name>/<param>".format(BASE_PATH))
 def board(board_name, param=None):
-    #filter by jenkins_project_name
+    # filter by jenkins_project_name
     jenkins_project_name = "HW_tests/HW_test_multiconfig"
     filters = filter_gen(urlparse(request.url).query)
     boot_tests = bt.BoardBootTests(board_name, jenkins_project_name, filters).boot_tests
     boards = [
         {
             "Jenkins Job Date": test.jenkins_job_date,
-            "Trigger": test.jenkins_trigger.split(':')[-1],
+            "Trigger": test.jenkins_trigger.split(":")[-1],
             "Artifactory source branch": test.source_adjacency_matrix,
             "HDL Commit": test.hdl_hash,
             "Linux Commit": test.linux_hash,
             "u-boot Reached": test.uboot_reached,
             "Linux Booted": test.linux_prompt_reached,
-            "Linux Tests": {"dmesg_errors": test.dmesg_errors_found, \
-                            "drivers_missing": test.drivers_missing},
-            "pyadi Tests": {"pass": str(int(test.pytest_tests) \
-                                    - int(test.pytest_failures) \
-                                    - int(test.pytest_skipped)),
-                            "fail": test.pytest_failures},
+            "Linux Tests": {
+                "dmesg_errors": test.dmesg_errors_found,
+                "drivers_missing": test.drivers_missing,
+            },
+            "pyadi Tests": {
+                "pass": str(
+                    int(test.pytest_tests)
+                    - int(test.pytest_failures)
+                    - int(test.pytest_skipped)
+                ),
+                "fail": test.pytest_failures,
+            },
             "Jenkins Build Number": test.jenkins_build_number,
-            "Failure reason": 'None' if len(test.boot_test_failure) == 0 \
-                                    else test.boot_test_failure,
+            "Failure reason": "None"
+            if len(test.boot_test_failure) == 0
+            else test.boot_test_failure,
             "Artifacts": artifact_url_gen(
                 JENKINS_SERVER,
                 JENKINS_PORT,
                 test.jenkins_project_name,
                 test.jenkins_build_number,
-                board_name
+                board_name,
             ),
             "Result": test.boot_test_result,
-            "url" : url_gen(
+            "url": url_gen(
                 JENKINS_SERVER,
                 JENKINS_PORT,
                 test.jenkins_project_name,
                 test.jenkins_build_number,
                 board_name,
-                test.hdl_hash.split('\s')[0].strip(),
-                test.linux_hash.split('\s')[0].strip(),
-                test.jenkins_trigger
-            )
+                test.hdl_hash.split("\s")[0].strip(),
+                test.linux_hash.split("\s")[0].strip(),
+                test.jenkins_trigger,
+            ),
         }
         for test in boot_tests
     ]
@@ -210,20 +229,19 @@ def pyadi_design(design: str):
 
     return render_template("pyadi_iio/boards.html", fig=fightml, design=design)
 
+
 # Serve some static files
-@app.route('{}/files/<path:name>'.format(BASE_PATH))
+@app.route("{}/files/<path:name>".format(BASE_PATH))
 def send_file(name):
     print(name)
-    return send_from_directory(
-        'templates/', name
-    )
+    return send_from_directory("templates/", name)
 
-@app.route('{}/static/<path:filename>'.format(BASE_PATH))
+
+@app.route("{}/static/<path:filename>".format(BASE_PATH))
 def send_assets(filename):
     print(filename)
-    return send_from_directory(
-        'static/', filename
-    )
+    return send_from_directory("static/", filename)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
