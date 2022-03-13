@@ -6,6 +6,7 @@ from models import boot_tests as bt
 from models.db import DB
 from pages.hwtests import allboards as ab
 from pages.pyadi.plots import gen_line_plot_html
+from pages.publicci.dashboard import Dashboard
 from utility import artifact_url_gen, filter_gen, url_gen
 
 # from junit2htmlreport import parser
@@ -15,6 +16,27 @@ app = Flask(__name__)
 JENKINS_SERVER = "10.116.171.86"
 JENKINS_PORT = None
 BASE_PATH = "/constellation"
+
+pci_dash = Dashboard(
+    gh_projects=[
+        {"repo": "linux"},
+        {"repo": "libiio"},
+        {"repo": "iio-oscilloscope"},
+        {"repo": "libad9361-iio"},
+        {"repo": "libsmu"},
+        {"repo": "libm2k"},
+        {"repo": "scopy"},
+        {"repo": "pyadi-iio"},
+        {"repo": "pyadi-jif","branch":"main"},
+        {"repo": "pyadi-dt","branch":"main"},
+        {"repo": "genalyzer","branch":"main"},
+        {"repo": "TransceiverToolbox"},
+        {"repo": "HighSpeedConverterToolbox"},
+        {"repo": "SensorToolbox"},
+        {"repo": "RFMicrowaveToolbox","branch":"main"},
+        {"repo": "TimeOfFlightToolbox"},
+    ]
+)
 
 
 @app.route(BASE_PATH + "/")
@@ -242,6 +264,10 @@ def send_assets(filename):
     print(filename)
     return send_from_directory("static/", filename)
 
+
+@app.route("{}/publicci/".format(BASE_PATH))
+def public_ci():
+    return pci_dash.get_status_html()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
