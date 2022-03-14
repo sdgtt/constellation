@@ -7,7 +7,7 @@ import requests
 class GitHub:
     def __init__(self) -> None:
         self.github_url = "https://api.github.com"
-        self.token = os.getenv('GH_TOKEN')
+        self.token = os.getenv("GH_TOKEN")
         self.s = requests.Session()
 
     def get_header(self):
