@@ -9,4 +9,4 @@ fi
 
 docker build -t constellation .
 # docker run  -d --restart unless-stopped -p 5000:5000 constellation
-docker run -p 5000:5000 constellation
+docker run -p 5000:5000 constellation --env GH_TOKEN=$GH_TOKEN
