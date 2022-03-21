@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div style="text-align: right;">
+Last Update: {{ date }}
+</div>
+
+</br>
+<center>
+  <h1>Project Source CI Build Statuses</h1>
+</center>
+</br>
+
+<center>
+  <table style="width: 75%;" id="data" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Master Branch Status</th>
+        <th>Checks</th>
+        <th>Last Commit Author</th>
+        <th>Commit Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for project in projects %}
+        <tr>
+          <td>{{ project }}</td>
+          {% if projects[project]['status']=="success" %}
+          <td><img src="{{url_for('static', filename='green.svg')}}" style="width: 20px"></td>
+          {% elif projects[project]['status']=="failure" %}
+          <td><img src="{{url_for('static', filename='red.svg')}}" style="width: 20px"></td>
+          {% else %}
+          <td>{{ projects[project]['status'] }}</td>
+          {% endif %}
+          <td>
+            {% for check in projects[project]['checks'] %}
+            {% if check['status']=="success" %}
+            <div class="tooltip_check"> <img src="{{url_for('static', filename='green.svg')}}" style="width: 20px"><span class="tooltiptext_check">{{ check['name'] }}</span></div>
+            {% elif check['status']=="failure" %}
+            <div class="tooltip_check"> <img src="{{url_for('static', filename='red.svg')}}" style="width: 20px"><span class="tooltiptext_check">{{ check['name'] }}</span></div>
+            {% else %}
+            <div class="tooltip_check"> <img src="{{url_for('static', filename='skipped.svg')}}" style="width: 20px"><span class="tooltiptext_check">{{ check['name'] }}</span></div>
+            {% endif %}
+            {% endfor %}
+          </td>
+          <td>{{ projects[project]['author'] }}</td>
+          <td>{{ projects[project]['date'] }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</center>
+</br>
+
+{% endblock %}
