@@ -1,5 +1,6 @@
 from enum import Enum, unique
 
+
 @unique
 class BoardStatus(Enum):
     POWER_ON = 1

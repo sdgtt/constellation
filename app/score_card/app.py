@@ -1,34 +1,36 @@
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
-from dash import html, dcc, Input, Output, dash_table
-from flask import Markup
-import plotly.express as px
-import pandas as pd
-import requests
-import plotly.express as px
-import plotly.graph_objects as go
-from datetime import date, timedelta, datetime
+from datetime import date, datetime, timedelta
+
 import dash_bootstrap_components as dbc
 import dash_dangerously_set_inner_html
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import requests
+from dash import Input, Output, dash_table, dcc, html
+from flask import Markup
+
 from ..models.score import Score
+
 
 ########################### Models #####################################
 def request_data(project=None, branch=None, size=None, board=None):
     default_jenkins_project = "HW_tests/HW_test_multiconfig"
     default_branch = "boot_partition_master"
     default_size = 7
-    jenkins_project =  project if project else default_jenkins_project
+    jenkins_project = project if project else default_jenkins_project
     size = size if size else default_size
     board = board if board else None
     branch = branch if branch else default_branch
-    depracated = []
+    deprecated = []
     sc = Score(
         jenkins_project=jenkins_project,
         size=int(size),
         branch=branch,
         board=board,
-        depracated=depracated
+        deprecated=deprecated,
     )
     return sc.to_dict()
 
@@ -48,11 +50,12 @@ def request_data(project=None, branch=None, size=None, board=None):
     # else:
     #     print("Query Failed!")
 
+
 def get_df_booted(data):
     # create time-series based data frame
     data_dict = {
         "total": [],
-        "logs_missing":[],
+        "logs_missing": [],
         "boards": [],
         "booted": [],
         "not_booted": [],
@@ -65,34 +68,40 @@ def get_df_booted(data):
         "pytest_errors": [],
         "pytest_failures": [],
         "pytest_skipped": [],
-        "pytest_tests": []
-     }
+        "pytest_tests": [],
+    }
     index_set = []
-    builds = [ build for build in data['builds'].keys()]
-    sd = datetime.strptime(data['builds'][builds[-1]]['jenkins_job_date'].split('T')[0], '%Y-%m-%d')
-    ed = datetime.strptime(data['builds'][builds[0]]['jenkins_job_date'].split('T')[0], '%Y-%m-%d')
-    drs = [sd + timedelta(days=x) for x in range((ed-sd).days + 1)]
+    builds = [build for build in data["builds"].keys()]
+    sd = datetime.strptime(
+        data["builds"][builds[-1]]["jenkins_job_date"].split("T")[0], "%Y-%m-%d"
+    )
+    ed = datetime.strptime(
+        data["builds"][builds[0]]["jenkins_job_date"].split("T")[0], "%Y-%m-%d"
+    )
+    drs = [sd + timedelta(days=x) for x in range((ed - sd).days + 1)]
     for dr in drs:
         found = False
-        for build, build_data in data['builds'].items():
-            dr_string = dr.strftime('%Y-%m-%d')
-            build_data_d = build_data['jenkins_job_date'].split('T')[0]
-            build_data_summary = data['summaries'][build]
-            regression_data_summary = data['regressions'][build]
+        for build, build_data in data["builds"].items():
+            dr_string = dr.strftime("%Y-%m-%d")
+            build_data_d = build_data["jenkins_job_date"].split("T")[0]
+            build_data_summary = data["summaries"][build]
+            regression_data_summary = data["regressions"][build]
             if build_data_d == dr_string:
-                index_set.append((dr, build, build_data['jenkins_trigger']))
+                index_set.append((dr, build, build_data["jenkins_trigger"]))
                 # index_set.append(dr)
-                data_dict['total'].append(len(data['boards']))
+                data_dict["total"].append(len(data["boards"]))
                 for k in data_dict:
-                    if k in ['total']:
+                    if k in ["total"]:
                         continue
-                    elif k in ['logs_missing']:
-                        data_dict[k].append(len(regression_data_summary['regress_missing_logs']))
+                    elif k in ["logs_missing"]:
+                        data_dict[k].append(
+                            len(regression_data_summary["regress_missing_logs"])
+                        )
                         continue
-                    data_dict[k].append(int(build_data_summary[k]['count']))
+                    data_dict[k].append(int(build_data_summary[k]["count"]))
                 found = True
         if not found:
-            index_set.append((dr,'NA', 'NA'))
+            index_set.append((dr, "NA", "NA"))
             # index_set.append(dr)
             for k in data_dict:
                 data_dict[k].append(0)
@@ -100,573 +109,658 @@ def get_df_booted(data):
     df = pd.DataFrame(
         data_dict,
         # index = pd.to_datetime(index_set)
-        index = pd.MultiIndex.from_tuples(index_set, names=['date','build','trigger'])
+        index=pd.MultiIndex.from_tuples(index_set, names=["date", "build", "trigger"]),
     )
     return df
 
+
 def get_fig_logs(data):
     df = get_df_booted(data)
-    df_index_ts = [ index_ts[0] for index_ts in df.index.tolist()]
-    df_index_build = [ index_ts[1] for index_ts in df.index.tolist()]
-    missing = df.loc[:,'boards']
+    df_index_ts = [index_ts[0] for index_ts in df.index.tolist()]
+    # df_index_build = [index_ts[1] for index_ts in df.index.tolist()]
+    # missing = df.loc[:, "boards"]
     fig = go.Figure(
         data=[
             go.Bar(
-                name='Logs',
+                name="Logs",
                 x=df_index_ts,
-                y=df.loc[:,'boards'].values.tolist(),
-                text=df.loc[:,'boards'].values.tolist()
+                y=df.loc[:, "boards"].values.tolist(),
+                text=df.loc[:, "boards"].values.tolist(),
             ),
             go.Bar(
-                name='Missing Logs',
+                name="Missing Logs",
                 x=df_index_ts,
-                y=df.loc[:,'logs_missing'].values.tolist(),
-                text=df.loc[:,'logs_missing'].values.tolist()
+                y=df.loc[:, "logs_missing"].values.tolist(),
+                text=df.loc[:, "logs_missing"].values.tolist(),
             ),
         ]
     )
-    fig.update_layout(barmode='stack', title='Boot Logs Turnout')
+    fig.update_layout(barmode="stack", title="Boot Logs Turnout")
     return fig
+
 
 def get_fig_booted(data):
     df = get_df_booted(data)
-    df_index_ts = [ index_ts[0] for index_ts in df.index.tolist()]
-    df_index_build = [ index_ts[1] for index_ts in df.index.tolist()]
+    df_index_ts = [index_ts[0] for index_ts in df.index.tolist()]
+    # df_index_build = [index_ts[1] for index_ts in df.index.tolist()]
     fig = go.Figure(
         data=[
             go.Bar(
-                name='Booted',
+                name="Booted",
                 x=df_index_ts,
-                y=df.loc[:,'booted'].values.tolist(),
-                text=df.loc[:,'booted'].values.tolist()
+                y=df.loc[:, "booted"].values.tolist(),
+                text=df.loc[:, "booted"].values.tolist(),
             ),
             go.Bar(
-                name='Linux Not Reached',
+                name="Linux Not Reached",
                 x=df_index_ts,
-                y=df.loc[:,'linux_prompt_not_reached'].values.tolist(),
-                text=df.loc[:,'linux_prompt_not_reached'].values.tolist()
+                y=df.loc[:, "linux_prompt_not_reached"].values.tolist(),
+                text=df.loc[:, "linux_prompt_not_reached"].values.tolist(),
             ),
             go.Bar(
-                name='U-boot Not Reached',
+                name="U-boot Not Reached",
                 x=df_index_ts,
-                y=df.loc[:,'uboot_not_reached'].values.tolist(),
-                text=df.loc[:,'uboot_not_reached'].values.tolist()
-            )
+                y=df.loc[:, "uboot_not_reached"].values.tolist(),
+                text=df.loc[:, "uboot_not_reached"].values.tolist(),
+            ),
         ]
     )
-    fig.update_layout(barmode='stack', title='Boot Histogram')
+    fig.update_layout(barmode="stack", title="Boot Histogram")
     return fig
+
 
 def get_fig_linux(data):
     df = get_df_booted(data)
-    df_index_ts = [ index_ts[0] for index_ts in df.index.tolist()]
-    df_index_build = [ index_ts[1] for index_ts in df.index.tolist()]
+    df_index_ts = [index_ts[0] for index_ts in df.index.tolist()]
+    # df_index_build = [index_ts[1] for index_ts in df.index.tolist()]
     fig = go.Figure(
         data=[
             go.Bar(
-                name='IIO Devices Found',
+                name="IIO Devices Found",
                 x=df_index_ts,
-                y=df.loc[:,'drivers_enumerated'].values.tolist(),
-                text=df.loc[:,'drivers_enumerated'].values.tolist()
+                y=df.loc[:, "drivers_enumerated"].values.tolist(),
+                text=df.loc[:, "drivers_enumerated"].values.tolist(),
             ),
             go.Bar(
-                name='IIO Devices not Found',
+                name="IIO Devices not Found",
                 x=df_index_ts,
-                y=df.loc[:,'drivers_missing'].values.tolist(),
-                text=df.loc[:,'drivers_missing'].values.tolist()
-            )
+                y=df.loc[:, "drivers_missing"].values.tolist(),
+                text=df.loc[:, "drivers_missing"].values.tolist(),
+            ),
         ]
     )
-    fig.update_layout(barmode='stack', title='IIO Devices')
+    fig.update_layout(barmode="stack", title="IIO Devices")
     return fig
+
 
 def get_fig_dmesg(data):
     df = get_df_booted(data)
-    df_index_ts = [ index_ts[0] for index_ts in df.index.tolist()]
-    df_index_build = [ index_ts[1] for index_ts in df.index.tolist()]
+    df_index_ts = [index_ts[0] for index_ts in df.index.tolist()]
+    # df_index_build = [index_ts[1] for index_ts in df.index.tolist()]
     fig = go.Figure(
         data=[
             go.Bar(
-                name='Dmesg Warnings Found',
+                name="Dmesg Warnings Found",
                 x=df_index_ts,
-                y=df.loc[:,'dmesg_warnings_found'].values.tolist(),
-                text=df.loc[:,'dmesg_warnings_found'].values.tolist()
+                y=df.loc[:, "dmesg_warnings_found"].values.tolist(),
+                text=df.loc[:, "dmesg_warnings_found"].values.tolist(),
             ),
             go.Bar(
-                name='Dmesg Errors Found',
+                name="Dmesg Errors Found",
                 x=df_index_ts,
-                y=df.loc[:,'dmesg_errors_found'].values.tolist(),
-                text=df.loc[:,'dmesg_errors_found'].values.tolist()
+                y=df.loc[:, "dmesg_errors_found"].values.tolist(),
+                text=df.loc[:, "dmesg_errors_found"].values.tolist(),
             ),
         ]
     )
-    fig.update_layout(barmode='stack', title='DMESG Errors')
+    fig.update_layout(barmode="stack", title="DMESG Errors")
     return fig
+
 
 def get_fig_pyadi(data):
     df = get_df_booted(data)
-    df_index_ts = [ index_ts[0] for index_ts in df.index.tolist()]
-    df_index_build = [ index_ts[1] for index_ts in df.index.tolist()]
-    pytest_fails = df.loc[:,'pytest_failures'] + df.loc[:,'pytest_skipped'] + df.loc[:,'pytest_errors']
+    df_index_ts = [index_ts[0] for index_ts in df.index.tolist()]
+    # df_index_build = [index_ts[1] for index_ts in df.index.tolist()]
+    pytest_fails = (
+        df.loc[:, "pytest_failures"]
+        + df.loc[:, "pytest_skipped"]
+        + df.loc[:, "pytest_errors"]
+    )
 
-    pytest_passed = df.loc[:,'pytest_tests'] - pytest_fails
-
+    pytest_passed = df.loc[:, "pytest_tests"] - pytest_fails
 
     fig = go.Figure(
         data=[
             go.Bar(
-                name='PYADI-IIO Tests Passed',
+                name="PYADI-IIO Tests Passed",
                 x=df_index_ts,
                 y=pytest_passed.values.tolist(),
-                text=pytest_passed.values.tolist()
+                text=pytest_passed.values.tolist(),
             ),
             go.Bar(
-                name='PYADI-IIO Tests Failures',
+                name="PYADI-IIO Tests Failures",
                 x=df_index_ts,
-                y=df.loc[:,'pytest_failures'].values.tolist(),
-                text=df.loc[:,'pytest_failures'].values.tolist()
+                y=df.loc[:, "pytest_failures"].values.tolist(),
+                text=df.loc[:, "pytest_failures"].values.tolist(),
             ),
             go.Bar(
-                name='PYADI-IIO Tests Skipped',
+                name="PYADI-IIO Tests Skipped",
                 x=df_index_ts,
-                y=df.loc[:,'pytest_skipped'].values.tolist(),
-                text=df.loc[:,'pytest_skipped'].values.tolist()
+                y=df.loc[:, "pytest_skipped"].values.tolist(),
+                text=df.loc[:, "pytest_skipped"].values.tolist(),
             ),
         ]
     )
-    fig.update_layout(barmode='stack', title='PYADI-IIO Tests')
+    fig.update_layout(barmode="stack", title="PYADI-IIO Tests")
     return fig
+
 
 ########################### Generators #####################################
 
+
 def generate_logo():
-    logo_path = 'app/static/sdg.svg'
+    logo_path = "app/static/sdg.svg"
     svg = open(logo_path).read()
-    sc_logo_div = html.Div(children=[
-        dash_dangerously_set_inner_html.DangerouslySetInnerHTML(Markup(svg)),
-        html.H5("Score Card Generator")
-    ], id='sc_logo_div', className="container", style={'margin-top': '2%', 'margin-bottom': '2%'})
+    sc_logo_div = html.Div(
+        children=[
+            dash_dangerously_set_inner_html.DangerouslySetInnerHTML(Markup(svg)),
+            html.H5("Score Card Generator"),
+        ],
+        id="sc_logo_div",
+        className="container",
+        style={"margin-top": "2%", "margin-bottom": "2%"},
+    )
     return sc_logo_div
+
 
 def generate_options(data):
 
-    options_div = html.Div(children=[
-        html.Div('Filters',id='sc_filters_header', className="display-6"),
-        html.H5('Project'),
-        dcc.Input(
-            id="sc_project_options",
-            type='text',
-            placeholder="Jenkins project name",
-            value='HW_tests/HW_test_multiconfig',
-            style = {
-                'width': '100%'
-            }
-        ),
-        html.H5('Branch'),
-        dcc.Dropdown(
-            options=[
-                {'label': 'Boot Partition Master', 'value': 'boot_partition_master'},
-                {'label': 'Boot Partition Release', 'value': 'boot_partition_release'},
-                {'label': 'HDL & Linux Master', 'value': 'hdl_master_linux_master'},
-                {'label': 'HDL & Linux Release', 'value': 'hdl_release_linux_release'},
-            ],
-            placeholder="Select target branch",
-            value="boot_partition_master",
-            id='sc_branch_options',
-            style = {
-                'width': '100%'
-            }
-        ),
-        html.H5('Size'),
-        dcc.Input(
-            id="sc_size_options",
-            type='number',
-            min=1,
-            max=10,
-            placeholder="No. of builds to Analyze",
-            value=7,
-            style = {
-                'width': '100%'
-            }
-        ),
-        html.H5('Board'),
-        dcc.Dropdown(
-            options=[
-                {'label': board, 'value': board} 
-                for board in data['boards']
-            ],
-            placeholder="Select target board",
-            id='sc_board_options',
-            style = {
-                'width': '100%'
-            }
-        ),
-    ], id='sc_filters_div', className="col-5", style={'margin-top': '2%'})
+    options_div = html.Div(
+        children=[
+            html.Div("Filters", id="sc_filters_header", className="display-6"),
+            html.H5("Project"),
+            dcc.Input(
+                id="sc_project_options",
+                type="text",
+                placeholder="Jenkins project name",
+                value="HW_tests/HW_test_multiconfig",
+                style={"width": "100%"},
+            ),
+            html.H5("Branch"),
+            dcc.Dropdown(
+                options=[
+                    {
+                        "label": "Boot Partition Master",
+                        "value": "boot_partition_master",
+                    },
+                    {
+                        "label": "Boot Partition Release",
+                        "value": "boot_partition_release",
+                    },
+                    {"label": "HDL & Linux Master", "value": "hdl_master_linux_master"},
+                    {
+                        "label": "HDL & Linux Release",
+                        "value": "hdl_release_linux_release",
+                    },
+                ],
+                placeholder="Select target branch",
+                value="boot_partition_master",
+                id="sc_branch_options",
+                style={"width": "100%"},
+            ),
+            html.H5("Size"),
+            dcc.Input(
+                id="sc_size_options",
+                type="number",
+                min=1,
+                max=10,
+                placeholder="No. of builds to Analyze",
+                value=7,
+                style={"width": "100%"},
+            ),
+            html.H5("Board"),
+            dcc.Dropdown(
+                options=[{"label": board, "value": board} for board in data["boards"]],
+                placeholder="Select target board",
+                id="sc_board_options",
+                style={"width": "100%"},
+            ),
+        ],
+        id="sc_filters_div",
+        className="col-5",
+        style={"margin-top": "2%"},
+    )
 
-    sc_filters_row = html.Div(children=[
-        options_div
-    ], id='sc_filters_row', className="row")
+    sc_filters_row = html.Div(
+        children=[options_div], id="sc_filters_row", className="row"
+    )
 
-    sc_filters_container = html.Div(children=[
-        sc_filters_row
-    ], id='sc_filters_container', className="container")
-
+    sc_filters_container = html.Div(
+        children=[sc_filters_row], id="sc_filters_container", className="container"
+    )
 
     return sc_filters_container
 
+
 def generate_top_boot_failing(data):
     # prep data
-    latest_build = list(data['builds'].keys())[0]
+    latest_build = list(data["builds"].keys())[0]
     failure_data_raw = []
-    for build,build_data in data['summaries'].items():
-        for failure, boards in build_data['not_booted']['data'].items():
+    for build, build_data in data["summaries"].items():
+        for failure, boards in build_data["not_booted"]["data"].items():
             for board in boards:
                 failure_data_raw.append([build, failure, board])
-    
-    df = pd.DataFrame(
-        failure_data_raw,
-        columns=['build','failure','board']
-    )
+
+    df = pd.DataFrame(failure_data_raw, columns=["build", "failure", "board"])
 
     failing_boards = []
     for bname, bdata in df.groupby(by="board"):
-        failing_boards.append({
-            "board": bname,
-            "failure": '\n'.join(bdata['failure'].tolist()),
-            "build": '\n'.join([ f'{build} (Latest)' if build==latest_build else build for build in bdata['build'].tolist()])
-        })
-    
+        failing_boards.append(
+            {
+                "board": bname,
+                "failure": "\n".join(bdata["failure"].tolist()),
+                "build": "\n".join(
+                    [
+                        f"{build} (Latest)" if build == latest_build else build
+                        for build in bdata["build"].tolist()
+                    ]
+                ),
+            }
+        )
+
     dt_top_failing_boards = dash_table.DataTable(
-        style_data={
-            'whiteSpace': 'pre-line',
-            'height': 'auto',
-            'width': '30%'
-        },
-        style_cell={'textAlign': 'left'},
+        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
+        style_cell={"textAlign": "left"},
         data=failing_boards,
         columns=[
-            {"name": 'Board', "id": 'board'},
-            {"name": 'Failure', "id": 'failure'},
-            {"name": 'Build', "id": 'build'}
-        ]
+            {"name": "Board", "id": "board"},
+            {"name": "Failure", "id": "failure"},
+            {"name": "Build", "id": "build"},
+        ],
     )
 
     failures = []
     for fname, fdata in df.groupby(by="failure"):
-        failures.append({
-            "failure": fname,
-            "board": '\n'.join(fdata['board'].tolist()),
-            "build": '\n'.join([ f'{build} (Latest)' if build==latest_build else build for build in fdata['build'].tolist()])
-        })
+        failures.append(
+            {
+                "failure": fname,
+                "board": "\n".join(fdata["board"].tolist()),
+                "build": "\n".join(
+                    [
+                        f"{build} (Latest)" if build == latest_build else build
+                        for build in fdata["build"].tolist()
+                    ]
+                ),
+            }
+        )
 
     dt_top_failures = dash_table.DataTable(
-        style_data={
-            'whiteSpace': 'pre-line',
-            'height': 'auto',
-            'width': '30%'
-        },
-        style_cell={'textAlign': 'left'},
+        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
+        style_cell={"textAlign": "left"},
         data=failures,
         columns=[
-            {"name": 'Failure', "id": 'failure'},
-            {"name": 'Board', "id": 'board'},
-            {"name": 'Build', "id": 'build'}
-        ]
+            {"name": "Failure", "id": "failure"},
+            {"name": "Board", "id": "board"},
+            {"name": "Build", "id": "build"},
+        ],
     )
-    top_boot_failing_div = html.Div(children=[
+    top_boot_failing_div = html.Div(
+        children=[
             dbc.Tabs(
                 [
                     dbc.Tab(
                         dbc.Col(
-                            dcc.Graph(id='g_boot_test_summary',figure=get_fig_booted(data)),
-                            width=6
+                            dcc.Graph(
+                                id="g_boot_test_summary", figure=get_fig_booted(data)
+                            ),
+                            width=6,
                         ),
-                        label='Trends',
-                        className="active"
+                        label="Trends",
+                        className="active",
                     ),
-                    dbc.Tab(dt_top_failing_boards, label='Failing Boards (Non Booting)'),
-                    dbc.Tab(dt_top_failures, label='Failures')
+                    dbc.Tab(
+                        dt_top_failing_boards, label="Failing Boards (Non Booting)"
+                    ),
+                    dbc.Tab(dt_top_failures, label="Failures"),
                 ]
             )
-        ], id='top_boot_failing_div'
+        ],
+        id="top_boot_failing_div",
     )
     return top_boot_failing_div
 
+
 def generate_drivers_enumeration(data):
     # prep data
-    latest_build = list(data['builds'].keys())[0]
+    latest_build = list(data["builds"].keys())[0]
     missing_driver_data_raw = []
-    for build,build_data in data['summaries'].items():
-        for driver, boards in build_data['drivers_missing']['data'].items():
+    for build, build_data in data["summaries"].items():
+        for driver, boards in build_data["drivers_missing"]["data"].items():
             for board in boards:
                 missing_driver_data_raw.append([build, driver, board])
-    
-    df = pd.DataFrame(
-        missing_driver_data_raw,
-        columns=['build','driver','board']
-    )
+
+    df = pd.DataFrame(missing_driver_data_raw, columns=["build", "driver", "board"])
 
     failing_boards = []
     for bname, bdata in df.groupby(by="board"):
-        failing_boards.append({
-            "board": bname,
-            "driver": '\n'.join(bdata['driver'].tolist()),
-            "build": '\n'.join([ f'{build} (Latest)' if build==latest_build else build for build in bdata['build'].tolist()])
-        })
-    
+        failing_boards.append(
+            {
+                "board": bname,
+                "driver": "\n".join(bdata["driver"].tolist()),
+                "build": "\n".join(
+                    [
+                        f"{build} (Latest)" if build == latest_build else build
+                        for build in bdata["build"].tolist()
+                    ]
+                ),
+            }
+        )
+
     dt_top_failing_boards = dash_table.DataTable(
-        style_data={
-            'whiteSpace': 'pre-line',
-            'height': 'auto',
-            'width': '30%'
-        },
-        style_cell={'textAlign': 'left'},
+        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
+        style_cell={"textAlign": "left"},
         data=failing_boards,
         columns=[
-            {"name": 'Board', "id": 'board'},
-            {"name": 'Missing Drivers', "id": 'driver'},
-            {"name": 'Build', "id": 'build'}
-        ]
+            {"name": "Board", "id": "board"},
+            {"name": "Missing Drivers", "id": "driver"},
+            {"name": "Build", "id": "build"},
+        ],
     )
 
     missing_drivers = []
     for fname, fdata in df.groupby(by="driver"):
-        missing_drivers.append({
-            "driver": fname,
-            "board": '\n'.join(fdata['board'].tolist()),
-            "build": '\n'.join([ f'{build} (Latest)' if build==latest_build else build for build in fdata['build'].tolist()])
-        })
+        missing_drivers.append(
+            {
+                "driver": fname,
+                "board": "\n".join(fdata["board"].tolist()),
+                "build": "\n".join(
+                    [
+                        f"{build} (Latest)" if build == latest_build else build
+                        for build in fdata["build"].tolist()
+                    ]
+                ),
+            }
+        )
 
     dt_missing_drivers = dash_table.DataTable(
-        style_data={
-            'whiteSpace': 'pre-line',
-            'height': 'auto',
-            'width': '30%'
-        },
-        style_cell={'textAlign': 'left'},
+        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
+        style_cell={"textAlign": "left"},
         data=missing_drivers,
         columns=[
-            {"name": 'Missing Drivers', "id": 'driver'},
-            {"name": 'Board', "id": 'board'},
-            {"name": 'Build', "id": 'build'}
-        ]
+            {"name": "Missing Drivers", "id": "driver"},
+            {"name": "Board", "id": "board"},
+            {"name": "Build", "id": "build"},
+        ],
     )
 
-    drivers_enumeration_div = html.Div(children=[
+    drivers_enumeration_div = html.Div(
+        children=[
             dbc.Tabs(
                 [
                     dbc.Tab(
                         dbc.Col(
-                            dcc.Graph(id='g_linux_test_summary',figure=get_fig_linux(data)),
-                            width=6
+                            dcc.Graph(
+                                id="g_linux_test_summary", figure=get_fig_linux(data)
+                            ),
+                            width=6,
                         ),
-                        label='Trends',
-                        className="active"
+                        label="Trends",
+                        className="active",
                     ),
-                    dbc.Tab(dt_top_failing_boards, label='Failing Boards (Failed Device Enumeration)'),
-                    dbc.Tab(dt_missing_drivers, label='Missing Drivers')
+                    dbc.Tab(
+                        dt_top_failing_boards,
+                        label="Failing Boards (Failed Device Enumeration)",
+                    ),
+                    dbc.Tab(dt_missing_drivers, label="Missing Drivers"),
                 ]
             )
-        ], id='drivers_enumeration_div'
+        ],
+        id="drivers_enumeration_div",
     )
 
     return drivers_enumeration_div
 
+
 def generate_dmesg_errors(data):
     # prep data
-    latest_build = list(data['builds'].keys())[0]
+    latest_build = list(data["builds"].keys())[0]
     dmesg_error_data_raw = []
-    for build,build_data in data['summaries'].items():
-        for error, boards in build_data['dmesg_errors_found']['data'].items():
+    for build, build_data in data["summaries"].items():
+        for error, boards in build_data["dmesg_errors_found"]["data"].items():
             for board in boards:
                 dmesg_error_data_raw.append([build, error, board])
-    
-    #create pandas data frame
-    df = pd.DataFrame(
-        dmesg_error_data_raw,
-        columns=['build','error','board']
-    )
+
+    # create pandas data frame
+    df = pd.DataFrame(dmesg_error_data_raw, columns=["build", "error", "board"])
 
     failing_boards = []
     for bname, bdata in df.groupby(by="board"):
-        failing_boards.append({
-            "board": bname,
-            "error": '\n'.join(bdata['error'].tolist()),
-            "build": '\n'.join([ f'{build} (Latest)' if build==latest_build else build for build in bdata['build'].tolist()])
-        })
-    
+        failing_boards.append(
+            {
+                "board": bname,
+                "error": "\n".join(bdata["error"].tolist()),
+                "build": "\n".join(
+                    [
+                        f"{build} (Latest)" if build == latest_build else build
+                        for build in bdata["build"].tolist()
+                    ]
+                ),
+            }
+        )
+
     dt_top_failing_boards = dash_table.DataTable(
-        style_data={
-            'whiteSpace': 'pre-line',
-            'height': 'auto',
-            'width': '30%'
-        },
-        style_cell={'textAlign': 'left'},
+        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
+        style_cell={"textAlign": "left"},
         data=failing_boards,
         columns=[
-            {"name": 'Board', "id": 'board'},
-            {"name": 'dmesg Errors', "id": 'error'},
-            {"name": 'Build', "id": 'build'}
-        ]
+            {"name": "Board", "id": "board"},
+            {"name": "dmesg Errors", "id": "error"},
+            {"name": "Build", "id": "build"},
+        ],
     )
 
     dmesg_errors = []
     for fname, fdata in df.groupby(by="error"):
-        dmesg_errors.append({
-            "error": fname,
-            "board": '\n'.join(fdata['board'].tolist()),
-            "build": '\n'.join([ f'{build} (Latest)' if build==latest_build else build for build in fdata['build'].tolist()])
-        })
+        dmesg_errors.append(
+            {
+                "error": fname,
+                "board": "\n".join(fdata["board"].tolist()),
+                "build": "\n".join(
+                    [
+                        f"{build} (Latest)" if build == latest_build else build
+                        for build in fdata["build"].tolist()
+                    ]
+                ),
+            }
+        )
 
-    dt_dmesg_errors= dash_table.DataTable(
-        style_data={
-            'whiteSpace': 'pre-line',
-            'height': 'auto',
-            'width': '30%'
-        },
-        style_cell={'textAlign': 'left'},
+    dt_dmesg_errors = dash_table.DataTable(
+        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
+        style_cell={"textAlign": "left"},
         data=dmesg_errors,
         columns=[
-            {"name": 'dmesg Errors', "id": 'error'},
-            {"name": 'Board', "id": 'board'},
-            {"name": 'Build', "id": 'build'}
-        ]
+            {"name": "dmesg Errors", "id": "error"},
+            {"name": "Board", "id": "board"},
+            {"name": "Build", "id": "build"},
+        ],
     )
 
-    dmesg_errors_div = html.Div(children=[
+    dmesg_errors_div = html.Div(
+        children=[
             dbc.Tabs(
                 [
                     dbc.Tab(
                         dbc.Col(
-                            dcc.Graph(id='g_linux_dmesg_summary',figure=get_fig_dmesg(data)),
-                            width=6
+                            dcc.Graph(
+                                id="g_linux_dmesg_summary", figure=get_fig_dmesg(data)
+                            ),
+                            width=6,
                         ),
-                        label='Trends',
-                        className="active"
+                        label="Trends",
+                        className="active",
                     ),
-                    dbc.Tab(dt_top_failing_boards, label='Failing Boards (Dmesg Errors)'),
-                    dbc.Tab(dt_dmesg_errors, label='Dmeg Errors')
+                    dbc.Tab(
+                        dt_top_failing_boards, label="Failing Boards (Dmesg Errors)"
+                    ),
+                    dbc.Tab(dt_dmesg_errors, label="Dmeg Errors"),
                 ]
             )
-        ], id='dmesg_errors_div'
+        ],
+        id="dmesg_errors_div",
     )
     return dmesg_errors_div
 
+
 def generate_pytest_results(data):
 
-    pyadi_test_div = html.Div(children=[
+    pyadi_test_div = html.Div(
+        children=[
             dbc.Tabs(
                 [
                     dbc.Tab(
                         dbc.Col(
-                            dcc.Graph(id='g_pyadi_test',figure=get_fig_pyadi(data)),
-                            width=6
+                            dcc.Graph(id="g_pyadi_test", figure=get_fig_pyadi(data)),
+                            width=6,
                         ),
-                        label='Trends',
-                        className="active"
+                        label="Trends",
+                        className="active",
                     ),
                 ]
             )
-        ], id='pyadi_test_div'
+        ],
+        id="pyadi_test_div",
     )
     return pyadi_test_div
 
+
 def generate_at_glance(data):
-    sc_at_glance_div = html.Ul(children=[
-        html.Li('Summary', className="list-group-item display-6"),
-        html.Li('Jenkins Project: {}'.format(data['jenkins_project']), className="list-group-item"),
-        html.Li('Branch: {}'.format(data['branch']), className="list-group-item"),
-        html.Li('Builds Analyzed ({}):\n {}'.format(len(data['builds']), ','.join([ build for build in  data['builds']])), className="list-group-item", style={'whiteSpace': 'pre-line'}),
-        html.Li('Boards Tested ({}):\n {}'.format(len(data['boards']) ,'\n'.join([ build for build in data['boards']])), className="list-group-item", style={'whiteSpace': 'pre-line'}),
-    ], id='sc_at_glance_div', className="list-group list-group-flush")
+    sc_at_glance_div = html.Ul(
+        children=[
+            html.Li("Summary", className="list-group-item display-6"),
+            html.Li(
+                "Jenkins Project: {}".format(data["jenkins_project"]),
+                className="list-group-item",
+            ),
+            html.Li("Branch: {}".format(data["branch"]), className="list-group-item"),
+            html.Li(
+                "Builds Analyzed ({}):\n {}".format(
+                    len(data["builds"]), ",".join([build for build in data["builds"]])
+                ),
+                className="list-group-item",
+                style={"whiteSpace": "pre-line"},
+            ),
+            html.Li(
+                "Boards Tested ({}):\n {}".format(
+                    len(data["boards"]), "\n".join([build for build in data["boards"]])
+                ),
+                className="list-group-item",
+                style={"whiteSpace": "pre-line"},
+            ),
+        ],
+        id="sc_at_glance_div",
+        className="list-group list-group-flush",
+    )
     return sc_at_glance_div
 
+
 def generate_panel(data):
-    style = {'margin-top': '2%', 'margin-bottom': '2%'}
-    sc_panel_div = dbc.Row(children=[
-        dbc.Col(generate_at_glance(data), style=style),
-        dbc.Col(
-            [
-                # dbc.Row(dcc.Graph(id='g_boot_test_summary',figure=get_fig_booted(data)), style=style),
-                # dbc.Row(dcc.Graph(id='g_linux_test_summary',figure=get_fig_linux(data)), style=style),
-                # dbc.Row(dcc.Graph(id='g_pyadi_test_summary',figure=get_fig_pyadi(data)), style=style),
-                dbc.Row(dcc.Graph(id='g_logs_turnout',figure=get_fig_logs(data))),
-            ]
-        ),
-    ], id='sc_panel_div')
+    style = {"margin-top": "2%", "margin-bottom": "2%"}
+    sc_panel_div = dbc.Row(
+        children=[
+            dbc.Col(generate_at_glance(data), style=style),
+            dbc.Col(
+                [
+                    # dbc.Row(dcc.Graph(id='g_boot_test_summary',figure=get_fig_booted(data)), style=style),
+                    # dbc.Row(dcc.Graph(id='g_linux_test_summary',figure=get_fig_linux(data)), style=style),
+                    # dbc.Row(dcc.Graph(id='g_pyadi_test_summary',figure=get_fig_pyadi(data)), style=style),
+                    dbc.Row(dcc.Graph(id="g_logs_turnout", figure=get_fig_logs(data))),
+                ]
+            ),
+        ],
+        id="sc_panel_div",
+    )
     return sc_panel_div
 
+
 def generate_details(data):
-    sc_details_div = html.Div(children=[
-        dbc.Card(
-            [
-                dbc.CardBody(
-                    [
-                        html.H4("Boot Test", className="card-title"),
-                        generate_top_boot_failing(data),
-                    ]
-                ),
-                dbc.CardBody(
-                    [
-                        html.H4("Linux Test - IIO Drivers", className="card-title"),
-                        generate_drivers_enumeration(data),
-                    ]
-                ),
-                dbc.CardBody(
-                    [
-                        html.H4("Linux Test - DMESG", className="card-title"),
-                        generate_dmesg_errors(data),
-                    ]
-                ),
-                dbc.CardBody(
-                    [
-                        html.H4("PYADI-IIO Tests", className="card-title"),
-                        generate_pytest_results(data),
-                    ]
-                )
-            ]
-        ),
-        
-        # generate_drivers_enumeration(data),
-        # generate_dmesg_errors(data),
-    ], id='sc_details_div', className="row")
+    sc_details_div = html.Div(
+        children=[
+            dbc.Card(
+                [
+                    dbc.CardBody(
+                        [
+                            html.H4("Boot Test", className="card-title"),
+                            generate_top_boot_failing(data),
+                        ]
+                    ),
+                    dbc.CardBody(
+                        [
+                            html.H4("Linux Test - IIO Drivers", className="card-title"),
+                            generate_drivers_enumeration(data),
+                        ]
+                    ),
+                    dbc.CardBody(
+                        [
+                            html.H4("Linux Test - DMESG", className="card-title"),
+                            generate_dmesg_errors(data),
+                        ]
+                    ),
+                    dbc.CardBody(
+                        [
+                            html.H4("PYADI-IIO Tests", className="card-title"),
+                            generate_pytest_results(data),
+                        ]
+                    ),
+                ]
+            ),
+            # generate_drivers_enumeration(data),
+            # generate_dmesg_errors(data),
+        ],
+        id="sc_details_div",
+        className="row",
+    )
     return sc_details_div
 
+
 def generate_summaries(data):
-    sc_summaries_div = html.Div(children=[
-        generate_panel(data),
-        generate_details(data)
-    ], id='sc_summaries_div', className="container")
+    sc_summaries_div = html.Div(
+        children=[generate_panel(data), generate_details(data)],
+        id="sc_summaries_div",
+        className="container",
+    )
     return sc_summaries_div
+
 
 def generate_report(data):
     report_div = generate_summaries(data)
     return report_div
+
 
 ########################### Callbacks #####################################
 
 
 def register_callbacks(app):
     @app.callback(
-        Output("sc_report_div", 'children'),
+        Output("sc_report_div", "children"),
         [
-            Input("sc_project_options", 'value'),
-            Input("sc_branch_options", 'value'),
-            Input("sc_size_options", 'value'),
-            Input("sc_board_options", 'value')
-        ]
+            Input("sc_project_options", "value"),
+            Input("sc_branch_options", "value"),
+            Input("sc_size_options", "value"),
+            Input("sc_board_options", "value"),
+        ],
     )
     def update_report_by_branch(project, branch, size, board):
-        return generate_report(request_data(project=project, branch=branch, size=size, board=board))
+        return generate_report(
+            request_data(project=project, branch=branch, size=size, board=board)
+        )
+
 
 ########################### Main Layout #####################################
 
-layout = html.Div(children=[
-    generate_logo(),
-    generate_options(request_data()),
-    html.Div(children=generate_report(request_data()), id='sc_report_div')
-])
-
-if __name__ == '__main__':
-    app = Dash(__name__,external_stylesheets=[dbc.themes.MATERIA])
-    app.run_server(host="0.0.0.0", debug=True)
+layout = html.Div(
+    children=[
+        generate_logo(),
+        generate_options(request_data()),
+        html.Div(children=generate_report(request_data()), id="sc_report_div"),
+    ]
+)

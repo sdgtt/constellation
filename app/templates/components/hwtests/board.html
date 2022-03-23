@@ -3,7 +3,7 @@
 <br>
 
 <div class="filterContainer">
-  <div class="row"> 
+  <div class="row">
     <h4 class="filterElem">Apply Filter</h4></div>
     <div class="filterElem dropdown">
       <button class="btn btn-secondary dropdown-toggle" type="button" id="selectFieldMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width:250px;">
@@ -129,7 +129,7 @@
                 {% elif key == "ADI DIAGNOSTIC REPORT"%}
                   <a href="{{val}}"><i data-bs-toggle="tooltip" data-bs-placement="top" title="ADI DIAGNOSTIC REPORT"  class="bi bi-file-zip" style="color: blue;"></i></a>
                 {%endif%}
-                
+
               {%endfor%}
             </td>
           {% elif k in ["url", "Failure reason"] %}
@@ -142,4 +142,3 @@
       {% endfor %}
     </tbody>
   </table>
-  

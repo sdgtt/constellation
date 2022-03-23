@@ -1,11 +1,12 @@
 from app.models.db import DB
 
+
 class Artifact:
-    '''Class representing a test job artifact'''
+    """Class representing a test job artifact"""
 
     def __init__(self, raw_artifact_result=None):
-            self.raw_artifact_result = raw_artifact_result
-            self.__initialize_fields()
+        self.raw_artifact_result = raw_artifact_result
+        self.__initialize_fields()
 
     def __initialize_fields(self):
 
@@ -22,7 +23,7 @@ class Artifact:
             "artifact_info_type",
             "payload_raw",
             "payload_ts",
-            "payload"
+            "payload",
         ]
 
         if self.raw_artifact_result:
@@ -34,16 +35,14 @@ class Artifact:
     def display(self):
         return self.__dict__
 
+
 class Artifacts:
     def __init__(self, **filters):
 
         self.db = DB(index_name="artifacts")
-        db_res = self.db.search(
-            sort="archive_date",
-            **filters
-        )
+        db_res = self.db.search(sort="archive_date", **filters)
         # create boards object from raw db_res
-        self._artifacts = [ Artifact(row) for row in db_res['hits'] ]
+        self._artifacts = [Artifact(row) for row in db_res["hits"]]
 
     @property
     def artifacts(self):
@@ -55,6 +54,7 @@ class Artifacts:
         for ar in self._artifacts:
             self._artifacts_dict.append(ar.display())
         return self._artifacts_dict
+
 
 if __name__ == "__main__":
 
@@ -72,18 +72,17 @@ if __name__ == "__main__":
             "artifact_info_type",
             "payload_raw",
             "payload_ts",
-            "payload"
+            "payload",
         ]
 
         ar = Artifacts(
-                job_no="714",
-                artifact_info_type="enumerated_devs",
-                target_board="zynq-zed-adv7511-adrv9002-vcmos"
+            job_no="714",
+            artifact_info_type="enumerated_devs",
+            target_board="zynq-zed-adv7511-adrv9002-vcmos",
         )
         assert len(ar.artifacts) > 1
         for f in fields:
             assert hasattr(ar.artifacts[0], f)
-            print("{} is present with value {}".\
-            format(f,getattr(ar.artifacts[0],f)))
-        
+            print("{} is present with value {}".format(f, getattr(ar.artifacts[0], f)))
+
     test_model_artifacts()

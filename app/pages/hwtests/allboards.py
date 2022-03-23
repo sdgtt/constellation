@@ -9,6 +9,7 @@ def get_board_list_dummy():
         boards = [b.replace("\n", "") for b in boards]
     return boards
 
+
 def get_board_list():
     loc = os.path.dirname(__file__)
     loc = os.path.join(loc, "board_list.csv")

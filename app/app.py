@@ -1,22 +1,30 @@
 from urllib.parse import unquote, urlparse
-from flask import Flask, render_template, request, jsonify
-from flask import send_from_directory, Markup, Blueprint
-from flask import redirect, url_for
-from flask.helpers import get_root_path
-from app.pages.hwtests import allboards as ab
-from app.pages.pyadi.plots import gen_line_plot_html
-from app.pages.publicci.dashboard import Dashboard
+
 from app.models import boards as b
 from app.models import boot_tests as bt
 from app.models.db import DB
 from app.models.score import Score
-from app.utility import url_gen, filter_gen, artifact_url_gen
-
+from app.pages.hwtests import allboards as ab
+from app.pages.publicci.dashboard import Dashboard
+from app.pages.pyadi.plots import gen_line_plot_html
+from app.utility import artifact_url_gen, filter_gen, url_gen
+from flask import (
+    Blueprint,
+    Flask,
+    Markup,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    url_for,
+)
+from flask.helpers import get_root_path
 
 # from junit2htmlreport import parser
 
 # app = Flask(__name__)
-server_bp = Blueprint('constellation', __name__)
+server_bp = Blueprint("constellation", __name__)
 
 JENKINS_SERVER = "10.116.171.86"
 JENKINS_PORT = None
@@ -42,15 +50,19 @@ pci_dash = Dashboard(
         {"repo": "TimeOfFlightToolbox"},
     ]
 )
-@server_bp.route('/')
-def parent():
-    return redirect(url_for('constellation.welcome'))
 
-@server_bp.route(BASE_PATH+'/')
+
+@server_bp.route("/")
+def parent():
+    return redirect(url_for("constellation.welcome"))
+
+
+@server_bp.route(BASE_PATH + "/")
 @server_bp.route(BASE_PATH)
 def welcome():
-    svg = open(get_root_path(__name__) + '/static/sdg.svg').read()
+    svg = open(get_root_path(__name__) + "/static/sdg.svg").read()
     return render_template("index.html", sdg_logo=Markup(svg))
+
 
 @server_bp.route("{}/api/".format(BASE_PATH))
 @server_bp.route("{}/api/<param>".format(BASE_PATH))
@@ -71,13 +83,9 @@ def api(param=None):
                     agg_field = el
                 else:
                     kwargs.update({f: el})
-    result_json =  DB().search(
-                    size=size,
-                    order=order,
-                    agg_field=agg_field,
-                    **kwargs
-                )
+    result_json = DB().search(size=size, order=order, agg_field=agg_field, **kwargs)
     return result_json
+
 
 @server_bp.route("{}/api/board/<board_name>/".format(BASE_PATH))
 @server_bp.route("{}/api/board/<board_name>/<param>".format(BASE_PATH))
@@ -87,16 +95,17 @@ def board_api(board_name, param=None):
     filters = filter_gen(urlparse(request.url).query)
     boot_tests = bt.BoardBootTests(
         boot_folder_name=board_name,
-        jenkins_project_name=jenkins_project_name, 
-        filters=filters
+        jenkins_project_name=jenkins_project_name,
+        filters=filters,
     ).boot_tests_dict
-    for index,boot_test in enumerate(boot_tests):
+    for index, boot_test in enumerate(boot_tests):
         new_dict = {}
-        for k,v in boot_test.items():
-            if not k in ["boot_test_failure", "raw_boot_test_result"]:
-                new_dict.update({k:v})
+        for k, v in boot_test.items():
+            if k not in ["boot_test_failure", "raw_boot_test_result"]:
+                new_dict.update({k: v})
         boot_test_filtered.append(new_dict)
     return {"hits": boot_test_filtered}
+
 
 @server_bp.route("{}/api/sc/".format(BASE_PATH))
 @server_bp.route("{}/api/sc/<param>".format(BASE_PATH))
@@ -105,19 +114,24 @@ def score_api(param=None):
     default_branch = "boot_partition_master"
     default_size = 7
     filters = filter_gen(urlparse(unquote(request.url)).query)
-    jenkins_project = filters['jenkins_project'][0] if 'jenkins_project' in filters else default_jenkins_project
-    size = filters['size'][0] if 'size' in filters else default_size
-    board = filters['board'][0] if 'board' in filters else None
-    branch = filters['branch'][0] if 'branch' in filters else default_branch
+    jenkins_project = (
+        filters["jenkins_project"][0]
+        if "jenkins_project" in filters
+        else default_jenkins_project
+    )
+    size = filters["size"][0] if "size" in filters else default_size
+    board = filters["board"][0] if "board" in filters else None
+    branch = filters["branch"][0] if "branch" in filters else default_branch
     deprecated = []
     sc = Score(
         jenkins_project=jenkins_project,
         size=int(size),
         branch=branch,
         board=board,
-        deprecated=deprecated
+        deprecated=deprecated,
     )
     return sc.to_json()
+
 
 @server_bp.route("{}/boards".format(BASE_PATH))
 def allboards():
@@ -126,7 +140,9 @@ def allboards():
     jenkins_project_name = "HW_tests/HW_test_multiconfig"
     source_adjacency_matrix = "boot_partition_master"
     deprecated = []
-    boards_ref = b.Boards(jenkins_project_name, source_adjacency_matrix, deprecated).boards
+    boards_ref = b.Boards(
+        jenkins_project_name, source_adjacency_matrix, deprecated
+    ).boards
     headers = ["Board", "Status"]
     boards = [
         {
@@ -173,6 +189,7 @@ def allboards():
         "hwtests/allboards.html", headers=headers, boards=boards, summary=summary
     )
 
+
 @server_bp.route("{}/board/<board_name>/".format(BASE_PATH))
 @server_bp.route("{}/board/<board_name>/<param>".format(BASE_PATH))
 def board(board_name, param=None):
@@ -182,7 +199,7 @@ def board(board_name, param=None):
     boot_tests = bt.BoardBootTests(
         boot_folder_name=board_name,
         jenkins_project_name=jenkins_project_name,
-        filters=filters
+        filters=filters,
     ).boot_tests
     boards = [
         {
@@ -272,22 +289,18 @@ def pyadi_design(design: str):
 
     return render_template("pyadi_iio/boards.html", fig=fightml, design=design)
 
-# Serve some static files
-@server_bp.route('{}/files/<path:name>'.format(BASE_PATH))
-def send_file(name):
-    return send_from_directory(
-        'templates/', name
-    )
 
-@server_bp.route('{}/static/<path:filename>'.format(BASE_PATH))
+# Serve some static files
+@server_bp.route("{}/files/<path:name>".format(BASE_PATH))
+def send_file(name):
+    return send_from_directory("templates/", name)
+
+
+@server_bp.route("{}/static/<path:filename>".format(BASE_PATH))
 def send_assets(filename):
-    return send_from_directory(
-        'static/', filename
-    )
+    return send_from_directory("static/", filename)
+
 
 @server_bp.route("{}/publicci/".format(BASE_PATH))
 def public_ci():
     return pci_dash.get_status_html()
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
