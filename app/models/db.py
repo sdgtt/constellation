@@ -23,7 +23,14 @@ class DB:
             index_name=index_name,
         )
 
-    def search(self, size=10000, order="desc", agg_field=None, **kwargs):
+    def search(
+        self,
+        size=10000,
+        sort="jenkins_job_date",
+        order="desc",
+        agg_field=None,
+        **kwargs
+    ):
         result = {"hits": [], "aggregates": []}
         if kwargs:
             fields = []
@@ -34,10 +41,7 @@ class DB:
         else:
             query = {"match_all": {}}
 
-        request_body = {
-            "sort": [{"jenkins_job_date": {"order": order}}],
-            "query": query,
-        }
+        request_body = {"sort": [{sort: {"order": order}}], "query": query}
 
         if agg_field:
             request_body.update(
@@ -53,3 +57,14 @@ class DB:
                 result["aggregates"].append(row["key"])
 
         return result
+
+
+if __name__ == "__main__":
+
+    def test_db_boot_test():
+        pass
+
+    def test_db_artifacts():
+        db = DB(index_name="artifacts")
+        result = db.search(sort="archive_date")
+        assert len(result) == 2

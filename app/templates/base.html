@@ -80,7 +80,7 @@
         window_location = window.location.href;
         var board = '{{board_name}}';
         if (board){
-          url = "{{url_for('hello_world')}}/api/board/{{board_name}}";
+          url = "{{url_for('constellation.welcome')}}/api/board/{{board_name}}";
           data_param = {}
           $.ajax({
               url:url,
@@ -117,7 +117,7 @@
       });
       $('#clearFilterSubmitButton').click(function() {
         var boardName = document.getElementById('boardName').innerHTML;
-        window.location = window.location.origin + "{{url_for('hello_world')}}/board/" + boardName;
+        window.location = window.location.origin + "{{url_for('constellation.welcome')}}/board/" + boardName;
       });
     </script>
   </body>

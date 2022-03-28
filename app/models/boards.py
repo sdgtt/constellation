@@ -1,6 +1,6 @@
-from models.boot_tests import BootTest
-from models.data_types import BoardStatus
-from models.db import DB
+from app.models.boot_tests import BootTest
+from app.models.data_types import BoardStatus
+from app.models.db import DB
 
 
 class Board(BootTest):
