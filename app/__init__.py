@@ -26,7 +26,7 @@ def register_dashapps(server):
     score_card = Dash(
         __name__,
         server=server,
-        url_base_pathname="/scorecard/",
+        url_base_pathname="/constellation/scorecard/",
         assets_folder=get_root_path(__name__) + "/static",
         meta_tags=[meta_viewport],
         external_stylesheets=[dbc.themes.MATERIA],
@@ -41,4 +41,5 @@ def register_dashapps(server):
 def register_blueprints(server):
     from app.app import server_bp
 
-    server.register_blueprint(server_bp)
+    server.register_blueprint(server_bp, url_prefix="/constellation")
+

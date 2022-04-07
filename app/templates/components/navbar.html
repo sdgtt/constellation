@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{{url_for('constellation.welcome')}}/">Constellation</a>
+    <a class="navbar-brand" href="{{url_for('constellation.welcome')}}">Constellation</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -8,17 +8,17 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{{url_for('constellation.welcome')}}/boards">HW Pipeline</a>
+          <a class="nav-link active" aria-current="page" href="{{url_for('constellation.welcome')}}boards">HW Pipeline</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{{url_for('constellation.parent', _external=True)}}scorecard">Score Card</a>
+          <a class="nav-link active" aria-current="page" href="{{url_for('constellation.welcome')}}scorecard">Score Card</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{{url_for('constellation.welcome')}}/publicci">Public CI</a>
+          <a class="nav-link active" aria-current="page" href="{{url_for('constellation.welcome')}}publicci">Public CI</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{{url_for('constellation.welcome')}}/chw">Current HW</a>
+          <a class="nav-link active" aria-current="page" href="{{url_for('constellation.welcome')}}chw">Current HW</a>
         </li>
 
         <div class="dropdown show">
@@ -27,8 +27,8 @@
           </a>
 
           <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-            <a class="dropdown-item" aria-current="page" href="{{url_for('constellation.welcome')}}/kibana/kibana_multi_config_test_last_24">MCT</a>
-            <a class="dropdown-item" aria-current="page" href="{{url_for('constellation.welcome')}}/kibana/kibana_hardware_test_last_24">HWT</a>
+            <a class="dropdown-item" aria-current="page" href="{{url_for('constellation.welcome')}}kibana/kibana_multi_config_test_last_24">MCT</a>
+            <a class="dropdown-item" aria-current="page" href="{{url_for('constellation.welcome')}}kibana/kibana_hardware_test_last_24">HWT</a>
           </div>
         </div>
 
@@ -38,9 +38,9 @@
           </a>
 
           <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-            <a class="dropdown-item" aria-current="page" href="{{url_for('constellation.welcome')}}/pyadi-iio/all">PyADI-IIO</a>
-            <a class="dropdown-item" aria-current="page" href="{{url_for('constellation.welcome')}}/trx-toolbox">Transceiver Toolbox</a>
-            <a class="dropdown-item" aria-current="page" href="{{url_for('constellation.welcome')}}/hsx-toolbox">HSX Toolbox</a>
+            <a class="dropdown-item" aria-current="page" href="{{url_for('constellation.welcome')}}pyadi-iio/all">PyADI-IIO</a>
+            <a class="dropdown-item" aria-current="page" href="{{url_for('constellation.welcome')}}trx-toolbox">Transceiver Toolbox</a>
+            <a class="dropdown-item" aria-current="page" href="{{url_for('constellation.welcome')}}hsx-toolbox">HSX Toolbox</a>
           </div>
         </div>
 
@@ -48,3 +48,4 @@
     </div>
   </div>
 </nav>
+

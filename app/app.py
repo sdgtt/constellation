@@ -28,7 +28,6 @@ server_bp = Blueprint("constellation", __name__)
 
 JENKINS_SERVER = "10.116.171.86"
 JENKINS_PORT = None
-BASE_PATH = "/constellation"
 
 pci_dash = Dashboard(
     gh_projects=[
@@ -53,19 +52,13 @@ pci_dash = Dashboard(
 
 
 @server_bp.route("/")
-def parent():
-    return redirect(url_for("constellation.welcome"))
-
-
-@server_bp.route(BASE_PATH + "/")
-@server_bp.route(BASE_PATH)
 def welcome():
     svg = open(get_root_path(__name__) + "/static/sdg.svg").read()
     return render_template("index.html", sdg_logo=Markup(svg))
 
 
-@server_bp.route("{}/api/".format(BASE_PATH))
-@server_bp.route("{}/api/<param>".format(BASE_PATH))
+@server_bp.route("api/")
+@server_bp.route("api/<param>")
 def api(param=None):
     size = 10000
     order = "desc"
@@ -87,8 +80,8 @@ def api(param=None):
     return result_json
 
 
-@server_bp.route("{}/api/board/<board_name>/".format(BASE_PATH))
-@server_bp.route("{}/api/board/<board_name>/<param>".format(BASE_PATH))
+@server_bp.route("api/board/<board_name>/")
+@server_bp.route("api/board/<board_name>/<param>")
 def board_api(board_name, param=None):
     boot_test_filtered = []
     jenkins_project_name = "HW_tests/HW_test_multiconfig"
@@ -107,8 +100,8 @@ def board_api(board_name, param=None):
     return {"hits": boot_test_filtered}
 
 
-@server_bp.route("{}/api/sc/".format(BASE_PATH))
-@server_bp.route("{}/api/sc/<param>".format(BASE_PATH))
+@server_bp.route("api/sc/")
+@server_bp.route("api/sc/<param>")
 def score_api(param=None):
     default_jenkins_project = "HW_tests/HW_test_multiconfig"
     default_branch = "boot_partition_master"
@@ -133,7 +126,7 @@ def score_api(param=None):
     return sc.to_json()
 
 
-@server_bp.route("{}/boards".format(BASE_PATH))
+@server_bp.route("boards")
 def allboards():
     # retrieve boards from elastic server
     # filter by jenkins_project_name
@@ -190,8 +183,8 @@ def allboards():
     )
 
 
-@server_bp.route("{}/board/<board_name>/".format(BASE_PATH))
-@server_bp.route("{}/board/<board_name>/<param>".format(BASE_PATH))
+@server_bp.route("board/<board_name>/")
+@server_bp.route("board/<board_name>/<param>")
 def board(board_name, param=None):
     # filter by jenkins_project_name
     jenkins_project_name = "HW_tests/HW_test_multiconfig"
@@ -250,12 +243,12 @@ def board(board_name, param=None):
     return render_template("hwtests/board.html", board_name=board_name, boards=boards)
 
 
-@server_bp.route("{}/kibana/<visualization>".format(BASE_PATH))
+@server_bp.route("kibana/<visualization>")
 def kibana(visualization):
     return render_template("kibana/index.html", visualization=visualization)
 
 
-@server_bp.route("{}/pyadi-iio/<vendor>".format(BASE_PATH))
+@server_bp.route("pyadi-iio/<vendor>")
 def pyadi(vendor: str):
     import yaml
 
@@ -279,7 +272,7 @@ def pyadi(vendor: str):
     return render_template("pyadi_iio/index.html", boards=out)
 
 
-@server_bp.route("{}/pyadi-iio/design/<design>".format(BASE_PATH))
+@server_bp.route("pyadi-iio/design/<design>")
 def pyadi_design(design: str):
     # import yaml
     # with open("board_table.yaml", 'r') as stream:
@@ -291,16 +284,16 @@ def pyadi_design(design: str):
 
 
 # Serve some static files
-@server_bp.route("{}/files/<path:name>".format(BASE_PATH))
+@server_bp.route("files/<path:name>")
 def send_file(name):
     return send_from_directory("templates/", name)
 
 
-@server_bp.route("{}/static/<path:filename>".format(BASE_PATH))
+@server_bp.route("static/<path:filename>")
 def send_assets(filename):
     return send_from_directory("static/", filename)
 
 
-@server_bp.route("{}/publicci/".format(BASE_PATH))
+@server_bp.route("publicci")
 def public_ci():
     return pci_dash.get_status_html()
