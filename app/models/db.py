@@ -1,11 +1,15 @@
+import os
 import telemetry
+import time
 
 # TODO: transfer defaults to a config file
 MODE = "elastic"
-ELASTIC_SERVER = "192.168.10.1"
+ELASTIC_SERVER = "elasticsearch" if "ES" not in os.environ else os.environ["ES"]
 INDEX = "boot_tests"
 USERNAME = ""
 PASSWORD = ""
+MAX_CONNECTION_RETRIES=5
+RETRY_WAIT=30
 
 
 class DB:
@@ -16,12 +20,22 @@ class DB:
         password=PASSWORD,
         index_name=INDEX,
     ):
-        self.db = telemetry.elastic(
-            server=elastic_server,
-            username=username,
-            password=password,
-            index_name=index_name,
-        )
+        retries=0
+        while(True):
+            try:
+                self.db = telemetry.elastic(
+                    server=elastic_server,
+                    username=username,
+                    password=password,
+                    index_name=index_name,
+                )
+                break
+            except Exception as e:
+                print("Server not yet ready")
+                time.sleep(RETRY_WAIT)
+                retries += 1
+                if not retries < MAX_CONNECTION_RETRIES:
+                    raise e
 
     def search(
         self,
