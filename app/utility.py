@@ -9,7 +9,7 @@ def url_gen(
     trigger="NA",
     jenkins_base_path="/jenkins",
 ):
-    """ Utility method for generating urls"""
+    """Utility method for generating urls"""
 
     if jenkins_port:
         jenkins_server = jenkins_server + ":" + jenkins_port
@@ -59,8 +59,8 @@ def url_gen(
         url_hdl_commit = "NA"
 
     if not linux_commit == "NA":
-        url_linux_commit = "https://github.com/analogdevicesinc/linux/commits/{}".format(
-            linux_commit
+        url_linux_commit = (
+            "https://github.com/analogdevicesinc/linux/commits/{}".format(linux_commit)
         )
     else:
         url_linux_commit = "NA"
@@ -85,7 +85,7 @@ def artifact_url_gen(
     board,
     jenkins_base_path="/jenkins",
 ):
-    """ Utility method for generating artifact urls"""
+    """Utility method for generating artifact urls"""
 
     if jenkins_port:
         jenkins_server = jenkins_server + ":" + jenkins_port

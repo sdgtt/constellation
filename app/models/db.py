@@ -1,6 +1,7 @@
 import os
-import telemetry
 import time
+
+import telemetry
 
 # TODO: transfer defaults to a config file
 MODE = "elastic"
@@ -8,8 +9,8 @@ ELASTIC_SERVER = "elasticsearch" if "ES" not in os.environ else os.environ["ES"]
 INDEX = "boot_tests"
 USERNAME = ""
 PASSWORD = ""
-MAX_CONNECTION_RETRIES=5
-RETRY_WAIT=30
+MAX_CONNECTION_RETRIES = 5
+RETRY_WAIT = 30
 
 
 class DB:
@@ -20,8 +21,8 @@ class DB:
         password=PASSWORD,
         index_name=INDEX,
     ):
-        retries=0
-        while(True):
+        retries = 0
+        while True:
             try:
                 self.db = telemetry.elastic(
                     server=elastic_server,

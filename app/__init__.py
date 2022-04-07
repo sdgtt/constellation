@@ -42,4 +42,3 @@ def register_blueprints(server):
     from app.app import server_bp
 
     server.register_blueprint(server_bp, url_prefix="/constellation")
-
