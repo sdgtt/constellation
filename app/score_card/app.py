@@ -341,6 +341,50 @@ def generate_options(data):
 
     return sc_filters_container
 
+def generate_dash_table(data, target):
+
+    latest_build = list(data["builds"].keys())[0]
+
+    # unpack data
+    data_raw = []
+    for build, build_data in data["summaries"].items():
+        for item, boards in build_data[target]["data"].items():
+            for board in boards:
+                data_raw.append([build, item, board])
+
+    # convert data into data frame
+    df = pd.DataFrame(data_raw, columns=["build", "item", "board"])
+
+    # group data by item
+    data_processed = []
+    for fname, fdata in df.groupby(by="item"):
+        data_processed.append(
+            {
+                "item": fname,
+                "board": "\n".join(fdata["board"].tolist()),
+                "build": "\n".join(
+                    [
+                        f"{build} (Latest)" if build == latest_build else build
+                        for build in fdata["build"].tolist()
+                    ]
+                ),
+            }
+        )
+
+    #generate dash table
+    label = ' '.join([ele.title() for ele in target.split('_')])
+    dt = dash_table.DataTable(
+        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
+        style_cell={"textAlign": "left"},
+        data=data_processed,
+        columns=[
+            {"name": label, "id": "item"},
+            {"name": "Board", "id": "board"},
+            {"name": "Build", "id": "build"},
+        ],
+    )
+
+    return dt
 
 def generate_top_boot_failing(data):
     # prep data
@@ -610,7 +654,6 @@ def generate_dmesg_errors(data):
     )
     return dmesg_errors_div
 
-
 def generate_pytest_results(data):
 
     pyadi_test_div = html.Div(
@@ -625,6 +668,9 @@ def generate_pytest_results(data):
                         label="Trends",
                         className="active",
                     ),
+                    dbc.Tab(generate_dash_table(data, "pytest_failures"), label="PyADI IIO Failures"),
+                    dbc.Tab(generate_dash_table(data, "pytest_errors"), label="PyADI IIO Errors"),
+                    dbc.Tab(generate_dash_table(data, "pytest_skipped"), label="PyADI IIO Skipped")
                 ]
             )
         ],
