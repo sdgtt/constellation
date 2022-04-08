@@ -379,7 +379,7 @@ def generate_dash_table(data, target, groupby="item"):
                 fields[1]: "\n".join(fdata[fields[1]].tolist()),
                 fields[2]: "\n".join(
                     [
-                        f"{build} (Latest)" if build == latest_build else build
+                        f"{build} (L)" if build == latest_build else build
                         for build in fdata[fields[2]].tolist()
                     ]
                 ),
@@ -394,8 +394,12 @@ def generate_dash_table(data, target, groupby="item"):
         } for _id,_label in table_cols.items()
     ]
     dt = dash_table.DataTable(
-        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
-        style_cell={"textAlign": "left"},
+        style_data={"whiteSpace": "pre-line", "height": "auto"},
+        style_cell={"textAlign": "left", "vertical-align": "top"},
+        style_header={
+            'backgroundColor': '#D3D3D3',
+            'color': 'black',
+        },
         data=data_processed,
         columns=cols,
     )
