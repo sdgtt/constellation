@@ -19,7 +19,7 @@ from ..models.score import Score
 def request_data(project=None, branch=None, size=None, board=None):
     default_jenkins_project = "HW_tests/HW_test_multiconfig"
     default_branch = "boot_partition_master"
-    default_size = 7
+    default_size = 2
     jenkins_project = project if project else default_jenkins_project
     size = size if size else default_size
     board = board if board else None
@@ -341,9 +341,23 @@ def generate_options(data):
 
     return sc_filters_container
 
-def generate_dash_table(data, target):
+def generate_dash_table(data, target, groupby="item"):
 
     latest_build = list(data["builds"].keys())[0]
+    label = ' '.join([ele.title() for ele in target.split('_')])
+
+    # groupby config
+    table_cols = {
+        "item": label,
+        "board": "Board",
+        "build": "Build"
+    }
+    if groupby == "board":
+       table_cols = {
+            "board": "Board",
+            "item": label,
+            "build": "Build"
+        }
 
     # unpack data
     data_raw = []
@@ -357,97 +371,37 @@ def generate_dash_table(data, target):
 
     # group data by item
     data_processed = []
-    for fname, fdata in df.groupby(by="item"):
+    for fname, fdata in df.groupby(by=groupby):
+        fields = [ k for k in table_cols.keys() ] 
         data_processed.append(
             {
-                "item": fname,
-                "board": "\n".join(fdata["board"].tolist()),
-                "build": "\n".join(
+                fields[0]: fname,
+                fields[1]: "\n".join(fdata[fields[1]].tolist()),
+                fields[2]: "\n".join(
                     [
                         f"{build} (Latest)" if build == latest_build else build
-                        for build in fdata["build"].tolist()
+                        for build in fdata[fields[2]].tolist()
                     ]
                 ),
             }
         )
 
     #generate dash table
-    label = ' '.join([ele.title() for ele in target.split('_')])
+    cols = [
+        {
+            "name": _label,
+            "id": _id
+        } for _id,_label in table_cols.items()
+    ]
     dt = dash_table.DataTable(
         style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
         style_cell={"textAlign": "left"},
         data=data_processed,
-        columns=[
-            {"name": label, "id": "item"},
-            {"name": "Board", "id": "board"},
-            {"name": "Build", "id": "build"},
-        ],
+        columns=cols,
     )
-
     return dt
 
 def generate_top_boot_failing(data):
-    # prep data
-    latest_build = list(data["builds"].keys())[0]
-    failure_data_raw = []
-    for build, build_data in data["summaries"].items():
-        for failure, boards in build_data["not_booted"]["data"].items():
-            for board in boards:
-                failure_data_raw.append([build, failure, board])
-
-    df = pd.DataFrame(failure_data_raw, columns=["build", "failure", "board"])
-
-    failing_boards = []
-    for bname, bdata in df.groupby(by="board"):
-        failing_boards.append(
-            {
-                "board": bname,
-                "failure": "\n".join(bdata["failure"].tolist()),
-                "build": "\n".join(
-                    [
-                        f"{build} (Latest)" if build == latest_build else build
-                        for build in bdata["build"].tolist()
-                    ]
-                ),
-            }
-        )
-
-    dt_top_failing_boards = dash_table.DataTable(
-        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
-        style_cell={"textAlign": "left"},
-        data=failing_boards,
-        columns=[
-            {"name": "Board", "id": "board"},
-            {"name": "Failure", "id": "failure"},
-            {"name": "Build", "id": "build"},
-        ],
-    )
-
-    failures = []
-    for fname, fdata in df.groupby(by="failure"):
-        failures.append(
-            {
-                "failure": fname,
-                "board": "\n".join(fdata["board"].tolist()),
-                "build": "\n".join(
-                    [
-                        f"{build} (Latest)" if build == latest_build else build
-                        for build in fdata["build"].tolist()
-                    ]
-                ),
-            }
-        )
-
-    dt_top_failures = dash_table.DataTable(
-        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
-        style_cell={"textAlign": "left"},
-        data=failures,
-        columns=[
-            {"name": "Failure", "id": "failure"},
-            {"name": "Board", "id": "board"},
-            {"name": "Build", "id": "build"},
-        ],
-    )
     top_boot_failing_div = html.Div(
         children=[
             dbc.Tabs(
@@ -463,9 +417,13 @@ def generate_top_boot_failing(data):
                         className="active",
                     ),
                     dbc.Tab(
-                        dt_top_failing_boards, label="Failing Boards (Non Booting)"
+                        generate_dash_table(data, "not_booted", "board"),
+                        label="Failing Boards (Non Booting)"
                     ),
-                    dbc.Tab(dt_top_failures, label="Failures"),
+                    dbc.Tab(
+                        generate_dash_table(data, "not_booted"),
+                        label="Failures"
+                    ),
                 ]
             )
         ],
@@ -475,68 +433,6 @@ def generate_top_boot_failing(data):
 
 
 def generate_drivers_enumeration(data):
-    # prep data
-    latest_build = list(data["builds"].keys())[0]
-    missing_driver_data_raw = []
-    for build, build_data in data["summaries"].items():
-        for driver, boards in build_data["drivers_missing"]["data"].items():
-            for board in boards:
-                missing_driver_data_raw.append([build, driver, board])
-
-    df = pd.DataFrame(missing_driver_data_raw, columns=["build", "driver", "board"])
-
-    failing_boards = []
-    for bname, bdata in df.groupby(by="board"):
-        failing_boards.append(
-            {
-                "board": bname,
-                "driver": "\n".join(bdata["driver"].tolist()),
-                "build": "\n".join(
-                    [
-                        f"{build} (Latest)" if build == latest_build else build
-                        for build in bdata["build"].tolist()
-                    ]
-                ),
-            }
-        )
-
-    dt_top_failing_boards = dash_table.DataTable(
-        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
-        style_cell={"textAlign": "left"},
-        data=failing_boards,
-        columns=[
-            {"name": "Board", "id": "board"},
-            {"name": "Missing Drivers", "id": "driver"},
-            {"name": "Build", "id": "build"},
-        ],
-    )
-
-    missing_drivers = []
-    for fname, fdata in df.groupby(by="driver"):
-        missing_drivers.append(
-            {
-                "driver": fname,
-                "board": "\n".join(fdata["board"].tolist()),
-                "build": "\n".join(
-                    [
-                        f"{build} (Latest)" if build == latest_build else build
-                        for build in fdata["build"].tolist()
-                    ]
-                ),
-            }
-        )
-
-    dt_missing_drivers = dash_table.DataTable(
-        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
-        style_cell={"textAlign": "left"},
-        data=missing_drivers,
-        columns=[
-            {"name": "Missing Drivers", "id": "driver"},
-            {"name": "Board", "id": "board"},
-            {"name": "Build", "id": "build"},
-        ],
-    )
-
     drivers_enumeration_div = html.Div(
         children=[
             dbc.Tabs(
@@ -552,10 +448,13 @@ def generate_drivers_enumeration(data):
                         className="active",
                     ),
                     dbc.Tab(
-                        dt_top_failing_boards,
-                        label="Failing Boards (Failed Device Enumeration)",
+                        generate_dash_table(data, "drivers_missing", "board"),
+                        label="Failing Boards (Failed Device Enumeration)"
                     ),
-                    dbc.Tab(dt_missing_drivers, label="Missing Drivers"),
+                    dbc.Tab(
+                        generate_dash_table(data, "drivers_missing"), 
+                        label="Missing Drivers"
+                    ),
                 ]
             )
         ],
@@ -566,69 +465,6 @@ def generate_drivers_enumeration(data):
 
 
 def generate_dmesg_errors(data):
-    # prep data
-    latest_build = list(data["builds"].keys())[0]
-    dmesg_error_data_raw = []
-    for build, build_data in data["summaries"].items():
-        for error, boards in build_data["dmesg_errors_found"]["data"].items():
-            for board in boards:
-                dmesg_error_data_raw.append([build, error, board])
-
-    # create pandas data frame
-    df = pd.DataFrame(dmesg_error_data_raw, columns=["build", "error", "board"])
-
-    failing_boards = []
-    for bname, bdata in df.groupby(by="board"):
-        failing_boards.append(
-            {
-                "board": bname,
-                "error": "\n".join(bdata["error"].tolist()),
-                "build": "\n".join(
-                    [
-                        f"{build} (Latest)" if build == latest_build else build
-                        for build in bdata["build"].tolist()
-                    ]
-                ),
-            }
-        )
-
-    dt_top_failing_boards = dash_table.DataTable(
-        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
-        style_cell={"textAlign": "left"},
-        data=failing_boards,
-        columns=[
-            {"name": "Board", "id": "board"},
-            {"name": "dmesg Errors", "id": "error"},
-            {"name": "Build", "id": "build"},
-        ],
-    )
-
-    dmesg_errors = []
-    for fname, fdata in df.groupby(by="error"):
-        dmesg_errors.append(
-            {
-                "error": fname,
-                "board": "\n".join(fdata["board"].tolist()),
-                "build": "\n".join(
-                    [
-                        f"{build} (Latest)" if build == latest_build else build
-                        for build in fdata["build"].tolist()
-                    ]
-                ),
-            }
-        )
-
-    dt_dmesg_errors = dash_table.DataTable(
-        style_data={"whiteSpace": "pre-line", "height": "auto", "width": "30%"},
-        style_cell={"textAlign": "left"},
-        data=dmesg_errors,
-        columns=[
-            {"name": "dmesg Errors", "id": "error"},
-            {"name": "Board", "id": "board"},
-            {"name": "Build", "id": "build"},
-        ],
-    )
-
     dmesg_errors_div = html.Div(
         children=[
             dbc.Tabs(
@@ -644,9 +480,13 @@ def generate_dmesg_errors(data):
                         className="active",
                     ),
                     dbc.Tab(
-                        dt_top_failing_boards, label="Failing Boards (Dmesg Errors)"
+                        generate_dash_table(data, "dmesg_errors_found", "board"),
+                        label="Failing Boards (Dmesg Errors)"
                     ),
-                    dbc.Tab(dt_dmesg_errors, label="Dmeg Errors"),
+                    dbc.Tab(
+                        generate_dash_table(data, "dmesg_errors_found"),
+                        label="Dmeg Errors"
+                    ),
                 ]
             )
         ],
