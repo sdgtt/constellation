@@ -105,6 +105,9 @@ class Score:
             "drivers_missing": "missing_devs",
             "dmesg_warnings_found": "dmesg_warn",
             "dmesg_errors_found": "dmesg_err",
+            "pytest_errors": "pytest_error",
+            "pytest_failures": "pytest_failure",
+            "pytest_skipped": "pytest_skipped"
         }
         report = {}
         # for every build
@@ -162,13 +165,22 @@ class Score:
                             for ar in self.artifacts[bn]:
                                 if ar.artifact_info_type == supported_artifacts[test]:
                                     if ar.target_board == bt.boot_folder_name:
-                                        if ar.payload in report[bn][test]["data"]:
-                                            report[bn][test]["data"][ar.payload].append(
-                                                ar.target_board
+                                        entry = ar.payload
+                                        details = ar.target_board
+                                        if test in [
+                                            "pytest_errors",
+                                            "pytest_failures",
+                                            "pytest_skipped"
+                                        ]:
+                                            if not ar.payload_param == "NA":
+                                                details = ar.target_board + '(' + ar.payload_param + ')'
+                                        if entry in report[bn][test]["data"]:
+                                            report[bn][test]["data"][entry].append(
+                                                details
                                             )
                                         else:
                                             report[bn][test]["data"].update(
-                                                {ar.payload: [ar.target_board]}
+                                                {entry: [details]}
                                             )
 
             # test data credibility
@@ -180,6 +192,9 @@ class Score:
                 "drivers_missing",
                 "dmesg_warnings_found",
                 "dmesg_errors_found",
+                "pytest_errors",
+                "pytest_failures",
+                "pytest_skipped"
             ]:
                 if isinstance(report[bn][test]["data"], list):
                     assert report[bn][test]["count"] == len(report[bn][test]["data"])
