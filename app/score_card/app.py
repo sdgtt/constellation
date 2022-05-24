@@ -512,9 +512,18 @@ def generate_pytest_results(data):
                         label="Trends",
                         className="active",
                     ),
-                    dbc.Tab(generate_dash_table(data, "pytest_failures"), label="PyADI IIO Failures"),
-                    dbc.Tab(generate_dash_table(data, "pytest_errors"), label="PyADI IIO Errors"),
-                    dbc.Tab(generate_dash_table(data, "pytest_skipped"), label="PyADI IIO Skipped")
+                    dbc.Tab(
+                        generate_dash_table(data, "pytest_failures" ,"board"),
+                        label="PyADI IIO Failures"
+                    ),
+                    dbc.Tab(
+                        generate_dash_table(data, "pytest_errors", "board"),
+                        label="PyADI IIO Errors"
+                    ),
+                    dbc.Tab(
+                        generate_dash_table(data, "pytest_skipped", "board"),
+                        label="PyADI IIO Skipped"
+                    )
                 ]
             )
         ],
