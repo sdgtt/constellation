@@ -26,7 +26,7 @@ from flask.helpers import get_root_path
 # app = Flask(__name__)
 server_bp = Blueprint("constellation", __name__)
 
-JENKINS_SERVER = "10.116.171.86"
+JENKINS_SERVER = "gateway.englab"
 JENKINS_PORT = None
 
 pci_dash = Dashboard(
