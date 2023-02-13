@@ -341,23 +341,16 @@ def generate_options(data):
 
     return sc_filters_container
 
+
 def generate_dash_table(data, target, groupby="item"):
 
     latest_build = list(data["builds"].keys())[0]
-    label = ' '.join([ele.title() for ele in target.split('_')])
+    label = " ".join([ele.title() for ele in target.split("_")])
 
     # groupby config
-    table_cols = {
-        "item": label,
-        "board": "Board",
-        "build": "Build"
-    }
+    table_cols = {"item": label, "board": "Board", "build": "Build"}
     if groupby == "board":
-       table_cols = {
-            "board": "Board",
-            "item": label,
-            "build": "Build"
-        }
+        table_cols = {"board": "Board", "item": label, "build": "Build"}
 
     # unpack data
     data_raw = []
@@ -372,7 +365,7 @@ def generate_dash_table(data, target, groupby="item"):
     # group data by item
     data_processed = []
     for fname, fdata in df.groupby(by=groupby):
-        fields = [ k for k in table_cols.keys() ] 
+        fields = [k for k in table_cols.keys()]
         data_processed.append(
             {
                 fields[0]: fname,
@@ -386,24 +379,20 @@ def generate_dash_table(data, target, groupby="item"):
             }
         )
 
-    #generate dash table
-    cols = [
-        {
-            "name": _label,
-            "id": _id
-        } for _id,_label in table_cols.items()
-    ]
+    # generate dash table
+    cols = [{"name": _label, "id": _id} for _id, _label in table_cols.items()]
     dt = dash_table.DataTable(
         style_data={"whiteSpace": "pre-line", "height": "auto"},
         style_cell={"textAlign": "left", "vertical-align": "top"},
         style_header={
-            'backgroundColor': '#D3D3D3',
-            'color': 'black',
+            "backgroundColor": "#D3D3D3",
+            "color": "black",
         },
         data=data_processed,
         columns=cols,
     )
     return dt
+
 
 def generate_top_boot_failing(data):
     top_boot_failing_div = html.Div(
@@ -422,12 +411,9 @@ def generate_top_boot_failing(data):
                     ),
                     dbc.Tab(
                         generate_dash_table(data, "not_booted", "board"),
-                        label="Failing Boards (Non Booting)"
+                        label="Failing Boards (Non Booting)",
                     ),
-                    dbc.Tab(
-                        generate_dash_table(data, "not_booted"),
-                        label="Failures"
-                    ),
+                    dbc.Tab(generate_dash_table(data, "not_booted"), label="Failures"),
                 ]
             )
         ],
@@ -453,11 +439,11 @@ def generate_drivers_enumeration(data):
                     ),
                     dbc.Tab(
                         generate_dash_table(data, "drivers_missing", "board"),
-                        label="Failing Boards (Failed Device Enumeration)"
+                        label="Failing Boards (Failed Device Enumeration)",
                     ),
                     dbc.Tab(
-                        generate_dash_table(data, "drivers_missing"), 
-                        label="Missing Drivers"
+                        generate_dash_table(data, "drivers_missing"),
+                        label="Missing Drivers",
                     ),
                 ]
             )
@@ -485,11 +471,11 @@ def generate_dmesg_errors(data):
                     ),
                     dbc.Tab(
                         generate_dash_table(data, "dmesg_errors_found", "board"),
-                        label="Failing Boards (Dmesg Errors)"
+                        label="Failing Boards (Dmesg Errors)",
                     ),
                     dbc.Tab(
                         generate_dash_table(data, "dmesg_errors_found"),
-                        label="Dmeg Errors"
+                        label="Dmeg Errors",
                     ),
                 ]
             )
@@ -497,6 +483,7 @@ def generate_dmesg_errors(data):
         id="dmesg_errors_div",
     )
     return dmesg_errors_div
+
 
 def generate_pytest_results(data):
 
@@ -513,17 +500,17 @@ def generate_pytest_results(data):
                         className="active",
                     ),
                     dbc.Tab(
-                        generate_dash_table(data, "pytest_failures" ,"board"),
-                        label="PyADI IIO Failures"
+                        generate_dash_table(data, "pytest_failures", "board"),
+                        label="PyADI IIO Failures",
                     ),
                     dbc.Tab(
                         generate_dash_table(data, "pytest_errors", "board"),
-                        label="PyADI IIO Errors"
+                        label="PyADI IIO Errors",
                     ),
                     dbc.Tab(
                         generate_dash_table(data, "pytest_skipped", "board"),
-                        label="PyADI IIO Skipped"
-                    )
+                        label="PyADI IIO Skipped",
+                    ),
                 ]
             )
         ],

@@ -24,7 +24,7 @@ class Artifact:
             "payload_raw",
             "payload_ts",
             "payload",
-            "payload_param"
+            "payload_param",
         ]
 
         if self.raw_artifact_result:
@@ -74,7 +74,7 @@ if __name__ == "__main__":
             "payload_raw",
             "payload_ts",
             "payload",
-            "payload_param"
+            "payload_param",
         ]
 
         ar = Artifacts(

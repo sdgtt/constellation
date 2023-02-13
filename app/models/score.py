@@ -107,7 +107,7 @@ class Score:
             "dmesg_errors_found": "dmesg_err",
             "pytest_errors": "pytest_error",
             "pytest_failures": "pytest_failure",
-            "pytest_skipped": "pytest_skipped"
+            "pytest_skipped": "pytest_skipped",
         }
         report = {}
         # for every build
@@ -170,10 +170,10 @@ class Score:
                                         if test in [
                                             "pytest_errors",
                                             "pytest_failures",
-                                            "pytest_skipped"
+                                            "pytest_skipped",
                                         ]:
                                             if not ar.payload_param == "NA":
-                                                entry += '(' + ar.payload_param + ')'
+                                                entry += "(" + ar.payload_param + ")"
                                         if entry in report[bn][test]["data"]:
                                             report[bn][test]["data"][entry].append(
                                                 details
@@ -194,7 +194,7 @@ class Score:
                 "dmesg_errors_found",
                 "pytest_errors",
                 "pytest_failures",
-                "pytest_skipped"
+                "pytest_skipped",
             ]:
                 if isinstance(report[bn][test]["data"], list):
                     assert report[bn][test]["count"] == len(report[bn][test]["data"])
