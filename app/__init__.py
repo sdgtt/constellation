@@ -2,10 +2,12 @@ from flask import Flask
 from flask.helpers import get_root_path
 from dash import Dash
 import dash_bootstrap_components as dbc
+from flask_cors import CORS
 
 
 def create_app():
     server = Flask(__name__)
+    CORS(server)
 
     register_dashapps(server)
     # register_extensions(server)
