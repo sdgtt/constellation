@@ -61,7 +61,6 @@ class BootTest:
                         "pytest_skipped",
                         "pytest_tests",
                         "matlab_errors",
-                        "matlab_errors",
                         "matlab_failures",
                         "matlab_skipped",
                         "matlab_tests",
