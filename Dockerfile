@@ -4,7 +4,7 @@ USER root
 WORKDIR /app
 ADD . /app
 RUN pip install -r requirements.txt
-RUN git clone -b artifacts-support https://github.com/sdgtt/telemetry.git
+RUN git clone https://github.com/sdgtt/telemetry.git
 RUN cd telemetry && pip install -r requirements.txt && python setup.py install && cd ..
 RUN chmod u+x ./entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
