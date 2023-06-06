@@ -83,3 +83,17 @@ if __name__ == "__main__":
         db = DB(index_name="artifacts")
         result = db.search(sort="archive_date")
         assert len(result) == 2
+
+    def test_db_search():
+        db = DB(
+            elastic_server="primary.englab",
+            username="",
+            password="",
+            index_name="boot_tests"
+        )
+        result = db.search(
+            size=1,
+            sort="jenkins_job_date",
+            order="desc",
+            agg_field="boot_folder_name.keyword",
+        )
