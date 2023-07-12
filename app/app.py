@@ -60,10 +60,10 @@ def welcome():
 @server_bp.route("api/")
 @server_bp.route("api/<param>")
 def api(param=None):
-    size = 10000
+    size = 1000
     order = "desc"
-    agg_field = None
-    kwargs = {}
+    agg_field = "boot_folder_name.keyword"
+    kwargs = {"jenkins_project_name.keyword": "HW_tests/HW_test_multiconfig"}
     filters = filter_gen(urlparse(unquote(request.url)).query)
     for f, v in filters.items():
         if isinstance(v, list):

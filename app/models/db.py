@@ -46,7 +46,7 @@ class DB:
         agg_field=None,
         **kwargs
     ):
-        result = {"hits": [], "aggregates": []}
+        result = {"hits": [], "aggregates": [], "aggregates_top": []}
         if kwargs:
             fields = []
             for field in kwargs:
@@ -70,6 +70,16 @@ class DB:
         if agg_field:
             for row in res["aggregations"][agg_field]["buckets"]:
                 result["aggregates"].append(row["key"])
+                
+                agg_field_data = {}
+                # get top data for the aggregated field
+                for row_data in result["hits"]:
+                    agg_field = agg_field.split(".keyword")[0] if "keyword" in agg_field else agg_field
+                    if row_data[agg_field] == row["key"]:
+                        agg_field_data = row_data
+                        break
+                if agg_field_data:
+                    result["aggregates_top"].append({row["key"]: agg_field_data})
 
         return result
 
