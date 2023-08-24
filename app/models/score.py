@@ -197,13 +197,23 @@ class Score:
                 "pytest_skipped",
             ]:
                 if isinstance(report[bn][test]["data"], list):
-                    assert report[bn][test]["count"] == len(report[bn][test]["data"])
+                    try:
+                        assert report[bn][test]["count"] == len(report[bn][test]["data"])
+                    except Exception as e:
+                        print(f"Inconsistency in build {bn} on test {test}")
+                        print(report[bn][test])
+                        raise e
                 else:
                     count = 0
                     for k, boards in report[bn][test]["data"].items():
                         for board in boards:
                             count += 1
-                    assert report[bn][test]["count"] == count
+                    try:         
+                        assert report[bn][test]["count"] == count
+                    except Exception as e:
+                        print(f"Inconsistency in build {bn} on test {test}")
+                        print(report[bn][test])
+                        raise e
         return report
 
     def get_regressions(self):
