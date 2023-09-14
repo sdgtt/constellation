@@ -297,10 +297,9 @@ def generate_options(data):
                         "label": "Boot Partition Release",
                         "value": "boot_partition_release",
                     },
-                    {"label": "HDL & Linux Master", "value": "hdl_master_linux_master"},
                     {
-                        "label": "HDL & Linux Release",
-                        "value": "hdl_release_linux_release",
+                        "label": "Boot Partition Next Stable",
+                        "value": "boot_partition_next_stable",
                     },
                 ],
                 placeholder="Select target branch",
