@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.10
 LABEL maintainer "Travis F. Collins <travis.collins@analog.com>"
 USER root
 WORKDIR /app
