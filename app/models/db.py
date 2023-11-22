@@ -11,7 +11,17 @@ USERNAME = ""
 PASSWORD = ""
 MAX_CONNECTION_RETRIES = 5
 RETRY_WAIT = 30
-
+KEYWORDS = [
+    "boot_folder_name",
+    "hdl_branch",
+    "linux_branch",
+    "boot_partition_branch",
+    "jenkins_project_name",
+    "jenkins_agent",
+    "jenkins_trigger",
+    "source_adjacency_matrix",
+    "last_failing_stage",
+]
 
 class DB:
     def __init__(
@@ -20,6 +30,7 @@ class DB:
         username=USERNAME,
         password=PASSWORD,
         index_name=INDEX,
+        keywords=KEYWORDS
     ):
         retries = 0
         while True:
@@ -30,6 +41,7 @@ class DB:
                     password=password,
                     index_name=index_name,
                 )
+                self.keywords=keywords
                 break
             except Exception as e:
                 print("Server not yet ready")
@@ -51,7 +63,9 @@ class DB:
             fields = []
             for field in kwargs:
                 if kwargs[field]:
-                    fields.append({"match": {field: kwargs[field]}})
+                    val = kwargs[field]
+                    field = f"{field}.keyword" if field in self.keywords else field
+                    fields.append({"match": {field: val}})
             query = {"bool": {"must": fields}}
         else:
             query = {"match_all": {}}

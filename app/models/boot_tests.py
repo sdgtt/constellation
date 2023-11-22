@@ -2,6 +2,19 @@ from app.models.db import DB
 
 
 class BootTest:
+
+    KEYWORDS = [
+        "boot_folder_name",
+        "hdl_branch",
+        "linux_branch",
+        "boot_partition_branch",
+        "jenkins_project_name",
+        "jenkins_agent",
+        "jenkins_trigger",
+        "source_adjacency_matrix",
+        "last_failing_stage",
+    ]
+
     def __init__(self, raw_boot_test_result=None):
         self.raw_boot_test_result = raw_boot_test_result
         self.__initialize_fields()

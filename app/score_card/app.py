@@ -301,6 +301,10 @@ def generate_options(data):
                         "label": "Boot Partition Next Stable",
                         "value": "boot_partition_next_stable",
                     },
+                    {
+                        "label": "Boot Partition 2022_r2",
+                        "value": "boot_partition_2022_r2",
+                    },
                 ],
                 placeholder="Select target branch",
                 value="boot_partition_master",

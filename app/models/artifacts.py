@@ -4,6 +4,14 @@ from app.models.db import DB
 class Artifact:
     """Class representing a test job artifact"""
 
+    KEYWORDS = [
+        "job",
+        "job_build_parameters",
+        "file_name",
+        "target_board",
+        "artifact_info_type"
+    ]
+
     def __init__(self, raw_artifact_result=None):
         self.raw_artifact_result = raw_artifact_result
         self.__initialize_fields()
@@ -40,7 +48,7 @@ class Artifact:
 class Artifacts:
     def __init__(self, **filters):
 
-        self.db = DB(index_name="artifacts")
+        self.db = DB(index_name="artifacts",keywords=Artifact.KEYWORDS)
         db_res = self.db.search(sort="archive_date", **filters)
         # create boards object from raw db_res
         self._artifacts = [Artifact(row) for row in db_res["hits"]]
