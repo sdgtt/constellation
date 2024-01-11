@@ -37,6 +37,7 @@ class DB:
             try:
                 self.db = telemetry.elastic(
                     server=elastic_server,
+                    port=9200,
                     username=username,
                     password=password,
                     index_name=index_name,

@@ -639,7 +639,7 @@ def register_callbacks(app):
         ],
     )
     def update_report_by_branch(project, branch, size, board):
-        return generate_report(
+        return generate_report_tabs(
             request_data(project=project, branch=branch, size=size, board=board)
         )
 
