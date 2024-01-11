@@ -31,7 +31,7 @@ def register_dashapps(server):
         url_base_pathname="/constellation/scorecard/",
         assets_folder=get_root_path(__name__) + "/static",
         meta_tags=[meta_viewport],
-        external_stylesheets=[dbc.themes.MATERIA],
+        external_stylesheets=[dbc.themes.SANDSTONE],
     )
 
     with server.app_context():

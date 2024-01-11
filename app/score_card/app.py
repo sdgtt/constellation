@@ -8,20 +8,22 @@ import dash_dangerously_set_inner_html
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import requests
-from dash import Input, Output, dash_table, dcc, html
+import dash
+from dash import Input, Output, State, dash_table, dcc, html
 from flask import Markup
 
 from ..models.score import Score
 
 
 ########################### Models #####################################
-def request_data(project=None, branch=None, size=None, board=None):
+def request_data(project=None, branch=None, size=None, board=None, offset=None):
     default_jenkins_project = "HW_tests/HW_test_multiconfig"
-    default_branch = "boot_partition_master"
-    default_size = 2
+    default_branch = "boot_partition_main"
+    default_size = 7
+    default_offset = 0
     jenkins_project = project if project else default_jenkins_project
     size = size if size else default_size
+    offset = offset if offset else default_offset
     board = board if board else None
     branch = branch if branch else default_branch
     deprecated = []
@@ -31,6 +33,7 @@ def request_data(project=None, branch=None, size=None, board=None):
         branch=branch,
         board=board,
         deprecated=deprecated,
+        offset=offset,
     )
     return sc.to_dict()
 
@@ -135,7 +138,17 @@ def get_fig_logs(data):
             ),
         ]
     )
-    fig.update_layout(barmode="stack", title="Boot Logs Turnout")
+    fig.update_layout(
+        barmode="stack", 
+        title="Boot Logs Turnout",
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+        ),
+        margin=dict(l=20, r=20),
+    )
     return fig
 
 
@@ -165,7 +178,17 @@ def get_fig_booted(data):
             ),
         ]
     )
-    fig.update_layout(barmode="stack", title="Boot Histogram")
+    fig.update_layout(
+        barmode="stack", 
+        title="Boot Histogram",
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+        ),
+        margin=dict(l=20, r=20),
+    )
     return fig
 
 
@@ -189,7 +212,17 @@ def get_fig_linux(data):
             ),
         ]
     )
-    fig.update_layout(barmode="stack", title="IIO Devices")
+    fig.update_layout(
+        barmode="stack", 
+        title="IIO Devices",
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+        ),
+        margin=dict(l=20, r=20),
+    )
     return fig
 
 
@@ -213,7 +246,17 @@ def get_fig_dmesg(data):
             ),
         ]
     )
-    fig.update_layout(barmode="stack", title="DMESG Errors")
+    fig.update_layout(
+        barmode="stack", 
+        title="DMESG Errors",
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+        ),
+        margin=dict(l=20, r=20),
+    )
     return fig
 
 
@@ -251,7 +294,17 @@ def get_fig_pyadi(data):
             ),
         ]
     )
-    fig.update_layout(barmode="stack", title="PYADI-IIO Tests")
+    fig.update_layout(
+        barmode="stack", 
+        title="PYADI-IIO Tests",
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+        ),
+        margin=dict(l=20, r=20),
+    )
     return fig
 
 
@@ -259,25 +312,62 @@ def get_fig_pyadi(data):
 
 
 def generate_logo():
-    logo_path = "app/static/sdg.svg"
+    logo_path = "app/static/gco.svg"
     svg = open(logo_path).read()
     sc_logo_div = html.Div(
         children=[
             dash_dangerously_set_inner_html.DangerouslySetInnerHTML(Markup(svg)),
-            html.H5("Score Card Generator"),
+            html.H3("Kuiper Linux CT Score Card"),
         ],
         id="sc_logo_div",
-        className="container",
-        style={"margin-top": "2%", "margin-bottom": "2%"},
+        style={},
     )
     return sc_logo_div
 
+def generate_filters_offcanvas(data):
+    offcanvas = html.Div(
+        [
+            dbc.Button("Filters", id="open_filters_offcanvas", n_clicks=0),
+            dbc.Offcanvas(
+                generate_options(data),
+                id="filters_offcanvas",
+                title="Filters",
+                is_open=False,
+            ),
+        ],
+        style={
+            "position": "absolute",
+            "right": "0%",
+            "bottom": "0%"
+        }
+    )
+    return offcanvas
+
+def generate_header(data):
+    header_div = html.Div(
+        [
+            dbc.Row(
+                [
+                    dbc.Col(generate_logo(), width=10),
+                    dbc.Col(generate_filters_offcanvas(data), width=2),
+                ],
+                align="start",
+            ),
+        ],
+        style={
+            "margin-left":"10%",
+            "margin-right":"10%",
+            "margin-top": "3%",
+            "position": "relative",
+        }
+    )
+
+    return header_div
 
 def generate_options(data):
 
     options_div = html.Div(
         children=[
-            html.Div("Filters", id="sc_filters_header", className="display-6"),
             html.H5("Project"),
             dcc.Input(
                 id="sc_project_options",
@@ -290,8 +380,8 @@ def generate_options(data):
             dcc.Dropdown(
                 options=[
                     {
-                        "label": "Boot Partition Master",
-                        "value": "boot_partition_master",
+                        "label": "Boot Partition Main",
+                        "value": "boot_partition_main",
                     },
                     {
                         "label": "Boot Partition Release",
@@ -307,9 +397,8 @@ def generate_options(data):
                     },
                 ],
                 placeholder="Select target branch",
-                value="boot_partition_master",
+                value="boot_partition_main",
                 id="sc_branch_options",
-                style={"width": "100%"},
             ),
             html.H5("Size"),
             dcc.Input(
@@ -321,17 +410,23 @@ def generate_options(data):
                 value=7,
                 style={"width": "100%"},
             ),
+            html.H5("Offset"),
+            dcc.Input(
+                id="sc_offset_options",
+                type="number",
+                min=0,
+                max=20,
+                placeholder="No. of builds from the latest to analyze",
+                value=0,
+                style={"width": "100%"},
+            ),
             html.H5("Board"),
             dcc.Dropdown(
                 options=[{"label": board, "value": board} for board in data["boards"]],
                 placeholder="Select target board",
                 id="sc_board_options",
-                style={"width": "100%"},
             ),
         ],
-        id="sc_filters_div",
-        className="col-5",
-        style={"margin-top": "2%"},
     )
 
     sc_filters_row = html.Div(
@@ -386,7 +481,13 @@ def generate_dash_table(data, target, groupby="item"):
     cols = [{"name": _label, "id": _id} for _id, _label in table_cols.items()]
     dt = dash_table.DataTable(
         style_data={"whiteSpace": "pre-line", "height": "auto"},
-        style_cell={"textAlign": "left", "vertical-align": "top"},
+        style_cell={
+            "textAlign": "left",
+            "vertical-align": "top",
+            "font-family":"var(--bs-body-font-family)",
+            "font-size":"var(--bs-body-font-size)",
+            "font-weight": "var(--bs-body-font-weight)",
+        },
         style_header={
             "backgroundColor": "#D3D3D3",
             "color": "black",
@@ -398,27 +499,27 @@ def generate_dash_table(data, target, groupby="item"):
 
 
 def generate_top_boot_failing(data):
-    top_boot_failing_div = html.Div(
-        children=[
-            dbc.Tabs(
+
+    tabs = dbc.Tabs(
                 [
                     dbc.Tab(
-                        dbc.Col(
-                            dcc.Graph(
-                                id="g_boot_test_summary", figure=get_fig_booted(data)
-                            ),
-                            width=6,
-                        ),
-                        label="Trends",
-                        className="active",
-                    ),
-                    dbc.Tab(
                         generate_dash_table(data, "not_booted", "board"),
+                        tab_id="tab-1",
                         label="Failing Boards (Non Booting)",
                     ),
-                    dbc.Tab(generate_dash_table(data, "not_booted"), label="Failures"),
-                ]
+                    dbc.Tab(generate_dash_table(data, "not_booted"),
+                    tab_id="tab-2",
+                    label="Failures"),
+                ],
+                active_tab="tab-1",
             )
+    style = {"margin-top": "2%", "margin-bottom": "2%"}
+    top_boot_failing_div = dbc.Row(
+        children=[
+            dbc.Col(tabs, style=style, width=8),
+            dbc.Col(
+                dcc.Graph(id="g_boot_test_summary", figure=get_fig_booted(data)),width=4
+            ),
         ],
         id="top_boot_failing_div",
     )
@@ -426,62 +527,57 @@ def generate_top_boot_failing(data):
 
 
 def generate_drivers_enumeration(data):
-    drivers_enumeration_div = html.Div(
-        children=[
-            dbc.Tabs(
-                [
-                    dbc.Tab(
-                        dbc.Col(
-                            dcc.Graph(
-                                id="g_linux_test_summary", figure=get_fig_linux(data)
-                            ),
-                            width=6,
-                        ),
-                        label="Trends",
-                        className="active",
-                    ),
-                    dbc.Tab(
+    tabs = dbc.Tabs(
+            [
+                dbc.Tab(
                         generate_dash_table(data, "drivers_missing", "board"),
+                        tab_id="tab-1",
                         label="Failing Boards (Failed Device Enumeration)",
                     ),
-                    dbc.Tab(
-                        generate_dash_table(data, "drivers_missing"),
-                        label="Missing Drivers",
-                    ),
-                ]
-            )
+                dbc.Tab(
+                    generate_dash_table(data, "drivers_missing"),
+                    tab_id="tab-2",
+                    label="Missing Drivers",
+                ),
+            ],
+            active_tab="tab-1"
+        )
+    style = {"margin-top": "2%", "margin-bottom": "2%"}
+    drivers_enumeration_div = dbc.Row(
+        children=[
+            dbc.Col(tabs, style=style, width=8),
+            dbc.Col(
+                dcc.Graph(id="g_linux_test_summary", figure=get_fig_linux(data)),width=4
+            ),
         ],
         id="drivers_enumeration_div",
     )
-
     return drivers_enumeration_div
 
 
 def generate_dmesg_errors(data):
-    dmesg_errors_div = html.Div(
+    tabs = dbc.Tabs(
+        [
+            dbc.Tab(
+                generate_dash_table(data, "dmesg_errors_found", "board"),
+                tab_id="tab-1",
+                label="Failing Boards (Dmesg Errors)",
+            ),
+            dbc.Tab(
+                generate_dash_table(data, "dmesg_errors_found"),
+                tab_id="tab-2",
+                label="Dmeg Errors",
+            ),
+        ],
+        active_tab="tab-1"
+    )
+    style = {"margin-top": "2%", "margin-bottom": "2%"}
+    dmesg_errors_div = dbc.Row(
         children=[
-            dbc.Tabs(
-                [
-                    dbc.Tab(
-                        dbc.Col(
-                            dcc.Graph(
-                                id="g_linux_dmesg_summary", figure=get_fig_dmesg(data)
-                            ),
-                            width=6,
-                        ),
-                        label="Trends",
-                        className="active",
-                    ),
-                    dbc.Tab(
-                        generate_dash_table(data, "dmesg_errors_found", "board"),
-                        label="Failing Boards (Dmesg Errors)",
-                    ),
-                    dbc.Tab(
-                        generate_dash_table(data, "dmesg_errors_found"),
-                        label="Dmeg Errors",
-                    ),
-                ]
-            )
+            dbc.Col(tabs, style=style, width=8),
+            dbc.Col(
+                dcc.Graph(id="g_linux_dmesg_summary", figure=get_fig_dmesg(data)),width=4
+            ),
         ],
         id="dmesg_errors_div",
     )
@@ -490,32 +586,32 @@ def generate_dmesg_errors(data):
 
 def generate_pytest_results(data):
 
-    pyadi_test_div = html.Div(
+    tabs = dbc.Tabs(
+        [
+            dbc.Tab(
+                generate_dash_table(data, "pytest_failures", "board"),
+                tab_id="tab-1",
+                label="PyADI IIO Failures",
+            ),
+            dbc.Tab(
+                generate_dash_table(data, "pytest_errors", "board"),
+                tab_id="tab-2",
+                label="PyADI IIO Errors",
+            ),
+            dbc.Tab(
+                generate_dash_table(data, "pytest_skipped", "board"),
+                tab_id="tab-3",
+                label="PyADI IIO Skipped",
+            ),
+        ], active_tab="tab-1"
+    )
+    style = {"margin-top": "2%", "margin-bottom": "2%"}
+    pyadi_test_div = dbc.Row(
         children=[
-            dbc.Tabs(
-                [
-                    dbc.Tab(
-                        dbc.Col(
-                            dcc.Graph(id="g_pyadi_test", figure=get_fig_pyadi(data)),
-                            width=6,
-                        ),
-                        label="Trends",
-                        className="active",
-                    ),
-                    dbc.Tab(
-                        generate_dash_table(data, "pytest_failures", "board"),
-                        label="PyADI IIO Failures",
-                    ),
-                    dbc.Tab(
-                        generate_dash_table(data, "pytest_errors", "board"),
-                        label="PyADI IIO Errors",
-                    ),
-                    dbc.Tab(
-                        generate_dash_table(data, "pytest_skipped", "board"),
-                        label="PyADI IIO Skipped",
-                    ),
-                ]
-            )
+            dbc.Col(tabs, style=style, width=8),
+            dbc.Col(
+                dcc.Graph(id="g_pyadi_test", figure=get_fig_pyadi(data)),width=4
+            ),
         ],
         id="pyadi_test_div",
     )
@@ -525,7 +621,7 @@ def generate_pytest_results(data):
 def generate_at_glance(data):
     sc_at_glance_div = html.Ul(
         children=[
-            html.Li("Summary", className="list-group-item display-6"),
+            # html.Li("Summary", className="list-group-item display-6"),
             html.Li(
                 "Jenkins Project: {}".format(data["jenkins_project"]),
                 className="list-group-item",
@@ -556,74 +652,54 @@ def generate_panel(data):
     style = {"margin-top": "2%", "margin-bottom": "2%"}
     sc_panel_div = dbc.Row(
         children=[
-            dbc.Col(generate_at_glance(data), style=style),
+            dbc.Col(generate_at_glance(data), style=style, width=4),
             dbc.Col(
                 [
-                    # dbc.Row(dcc.Graph(id='g_boot_test_summary',figure=get_fig_booted(data)), style=style),
-                    # dbc.Row(dcc.Graph(id='g_linux_test_summary',figure=get_fig_linux(data)), style=style),
-                    # dbc.Row(dcc.Graph(id='g_pyadi_test_summary',figure=get_fig_pyadi(data)), style=style),
                     dbc.Row(dcc.Graph(id="g_logs_turnout", figure=get_fig_logs(data))),
-                ]
+                ], width=4
             ),
         ],
+        justify="between",
         id="sc_panel_div",
     )
     return sc_panel_div
-
-
-def generate_details(data):
-    sc_details_div = html.Div(
-        children=[
-            dbc.Card(
-                [
-                    dbc.CardBody(
-                        [
-                            html.H4("Boot Test", className="card-title"),
-                            generate_top_boot_failing(data),
-                        ]
-                    ),
-                    dbc.CardBody(
-                        [
-                            html.H4("Linux Test - IIO Drivers", className="card-title"),
-                            generate_drivers_enumeration(data),
-                        ]
-                    ),
-                    dbc.CardBody(
-                        [
-                            html.H4("Linux Test - DMESG", className="card-title"),
-                            generate_dmesg_errors(data),
-                        ]
-                    ),
-                    dbc.CardBody(
-                        [
-                            html.H4("PYADI-IIO Tests", className="card-title"),
-                            generate_pytest_results(data),
-                        ]
-                    ),
-                ]
-            ),
-            # generate_drivers_enumeration(data),
-            # generate_dmesg_errors(data),
-        ],
-        id="sc_details_div",
-        className="row",
-    )
-    return sc_details_div
-
-
-def generate_summaries(data):
-    sc_summaries_div = html.Div(
-        children=[generate_panel(data), generate_details(data)],
-        id="sc_summaries_div",
-        className="container",
-    )
-    return sc_summaries_div
-
 
 def generate_report(data):
     report_div = generate_summaries(data)
     return report_div
 
+def report_tabs(data, active_tab="t_summary"):
+
+    tabs = dbc.Tabs([
+                    dbc.Tab(label='Summaries', tab_id="t_summary", children=[
+                        generate_panel(data)
+                    ]),
+                    dbc.Tab(label='Boot Test', tab_id="t_boot_test", children=[
+                        generate_top_boot_failing(data),
+                    ]),
+                    dbc.Tab(label='Linux Test - IIO Drivers', tab_id="t_iio", children=[
+                        generate_drivers_enumeration(data)
+                    ]),
+                    dbc.Tab(label='Linux Test - DMESG', tab_id="t_dmesg", children=[
+                        generate_dmesg_errors(data),
+                    ]),
+                    dbc.Tab(label='PYADI-IIO Tests', tab_id="t_pyadi", children=[
+                        generate_pytest_results(data)
+                    ]),
+            ],
+            active_tab=active_tab,
+            id="sc_report_tab"
+        )
+    return tabs
+
+def generate_report_tabs(data):
+    return html.Div(
+        id="sc_report_div",
+        style = {"width": "80%", "margin": "auto"},
+        children=[
+            report_tabs(data)
+        ]
+    )
 
 ########################### Callbacks #####################################
 
@@ -636,20 +712,34 @@ def register_callbacks(app):
             Input("sc_branch_options", "value"),
             Input("sc_size_options", "value"),
             Input("sc_board_options", "value"),
+            Input("sc_offset_options", "value"),
+            Input("sc_report_tab","active_tab"),
         ],
     )
-    def update_report_by_branch(project, branch, size, board):
-        return generate_report_tabs(
-            request_data(project=project, branch=branch, size=size, board=board)
+    def update_report(project, branch, size, board, offset, active_tab):
+        return report_tabs(
+            request_data(project=project, branch=branch, size=size, board=board, offset=offset),
+            active_tab=active_tab
         )
+
+    @app.callback(
+        Output("filters_offcanvas", "is_open"),
+        Input("open_filters_offcanvas", "n_clicks"),
+        [State("filters_offcanvas", "is_open")],
+    )
+    def toggle_offcanvas(n1, is_open):
+        if n1:
+            return not is_open
+        return is_open
 
 
 ########################### Main Layout #####################################
 
 layout = html.Div(
     children=[
-        generate_logo(),
-        generate_options(request_data()),
-        html.Div(children=generate_report(request_data()), id="sc_report_div"),
-    ]
+        generate_header(request_data()),
+        generate_report_tabs(request_data()),
+    ],
+    id="main_panel",
+    style={}
 )
