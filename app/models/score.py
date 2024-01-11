@@ -30,9 +30,11 @@ class Score:
         branch="boot_partition_master",
         board=None,
         deprecated=[],
+        offset=0,
     ):
         self.jenkins_project = jenkins_project
         self.size = size
+        self.offset = offset
         self.board = board
         self.branch = branch
         self.deprecated = deprecated
@@ -46,8 +48,8 @@ class Score:
             source_adjacency_matrix=self.branch,
             boot_folder_name=self.board,
         )
-        self.builds = bts.latest_builds(self.size)
-        self.boards = bts.latest_builds_boards(self.size)
+        self.builds = bts.latest_builds(self.size, self.offset)
+        self.boards = bts.latest_builds_boards(self.size, self.offset)
         self.boot_tests, self.boot_tests_count = self.get_boot_tests()
         self.artifacts, self.artifacts_count = self.get_artifacts()
         self.test_results = self.get_test_results()

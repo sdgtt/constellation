@@ -106,6 +106,7 @@ def score_api(param=None):
     default_jenkins_project = "HW_tests/HW_test_multiconfig"
     default_branch = "boot_partition_master"
     default_size = 7
+    default_offset = 0 
     filters = filter_gen(urlparse(unquote(request.url)).query)
     jenkins_project = (
         filters["jenkins_project"][0]
@@ -113,6 +114,7 @@ def score_api(param=None):
         else default_jenkins_project
     )
     size = filters["size"][0] if "size" in filters else default_size
+    offset = filters["offset"][0] if "offset" in filters else default_offset
     board = filters["board"][0] if "board" in filters else None
     branch = filters["branch"][0] if "branch" in filters else default_branch
     deprecated = []
@@ -122,6 +124,7 @@ def score_api(param=None):
         branch=branch,
         board=board,
         deprecated=deprecated,
+        offset = int(offset)
     )
     return sc.to_json()
 

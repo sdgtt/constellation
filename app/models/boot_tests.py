@@ -172,12 +172,20 @@ class BoardBootTests:
     def boot_tests(self):
         return self._boot_tests
 
-    def latest_builds(self, size):
-        builds = {}
+    def latest_builds(self, size, offset=0):
+        builds = []
         element_count = 0
         for bt in self._boot_tests:
             if bt.jenkins_build_number not in builds:
-                builds.update(
+                builds.append(bt.jenkins_build_number)
+                element_count += 1
+                if element_count == size + offset:
+                    break
+        qualified_builds = builds[offset::1]
+        builds_dict = {}
+        for bt in self._boot_tests:
+            if bt.jenkins_build_number in qualified_builds:
+                builds_dict.update(
                     {
                         bt.jenkins_build_number: {
                             "jenkins_job_date": bt.jenkins_job_date,
@@ -185,15 +193,12 @@ class BoardBootTests:
                         }
                     }
                 )
-                element_count += 1
-                if element_count == size:
-                    break
+        return builds_dict
+       
 
-        return builds
-
-    def latest_builds_boards(self, size):
+    def latest_builds_boards(self, size, offset=0):
         boards = []
-        latest_builds = self.latest_builds(size)
+        latest_builds = self.latest_builds(size, offset)
         for bt in self._boot_tests:
             if bt.jenkins_build_number in latest_builds:
                 if bt.boot_folder_name not in boards:
