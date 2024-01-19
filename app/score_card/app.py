@@ -320,7 +320,7 @@ def generate_logo():
             html.H3("Kuiper Linux CT Score Card"),
         ],
         id="sc_logo_div",
-        style={},
+        style={"font-size": "15px"},
     )
     return sc_logo_div
 
@@ -338,7 +338,8 @@ def generate_filters_offcanvas(data):
         style={
             "position": "absolute",
             "right": "0%",
-            "bottom": "0%"
+            "bottom": "0%",
+            "font-size": "15px"
         }
     )
     return offcanvas
@@ -348,17 +349,18 @@ def generate_header(data):
         [
             dbc.Row(
                 [
-                    dbc.Col(generate_logo(), width=10),
+                    # dbc.Col(generate_logo(), width=10),
                     dbc.Col(generate_filters_offcanvas(data), width=2),
                 ],
                 align="start",
             ),
         ],
         style={
-            "margin-left":"10%",
-            "margin-right":"10%",
+            "margin-left":"2%",
+            "margin-right":"2%",
             "margin-top": "3%",
             "position": "relative",
+            "font-size": "15px"
         }
     )
 
@@ -374,7 +376,7 @@ def generate_options(data):
                 type="text",
                 placeholder="Jenkins project name",
                 value="HW_tests/HW_test_multiconfig",
-                style={"width": "100%"},
+                style={"width": "100%", "font-size": "15px"},
             ),
             html.H5("Branch"),
             dcc.Dropdown(
@@ -408,7 +410,7 @@ def generate_options(data):
                 max=10,
                 placeholder="No. of builds to Analyze",
                 value=7,
-                style={"width": "100%"},
+                style={"width": "100%","font-size": "15px"},
             ),
             html.H5("Offset"),
             dcc.Input(
@@ -418,7 +420,7 @@ def generate_options(data):
                 max=20,
                 placeholder="No. of builds from the latest to analyze",
                 value=0,
-                style={"width": "100%"},
+                style={"width": "100%","font-size": "15px"},
             ),
             html.H5("Board"),
             dcc.Dropdown(
@@ -484,13 +486,10 @@ def generate_dash_table(data, target, groupby="item"):
         style_cell={
             "textAlign": "left",
             "vertical-align": "top",
-            "font-family":"var(--bs-body-font-family)",
-            "font-size":"var(--bs-body-font-size)",
             "font-weight": "var(--bs-body-font-weight)",
         },
         style_header={
-            "backgroundColor": "#D3D3D3",
-            "color": "black",
+            "color": "3e3e3e",
         },
         data=data_processed,
         columns=cols,
@@ -695,7 +694,7 @@ def report_tabs(data, active_tab="t_summary"):
 def generate_report_tabs(data):
     return html.Div(
         id="sc_report_div",
-        style = {"width": "80%", "margin": "auto"},
+        style = {},
         children=[
             report_tabs(data)
         ]
@@ -741,5 +740,5 @@ layout = html.Div(
         generate_report_tabs(request_data()),
     ],
     id="main_panel",
-    style={}
+    style={ "font-size": "15px"}
 )

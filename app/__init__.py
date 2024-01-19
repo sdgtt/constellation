@@ -24,7 +24,6 @@ def register_dashapps(server):
         "name": "viewport",
         "content": "width=device-width, initial-scale=1, shrink-to-fit=no",
     }
-
     score_card = Dash(
         __name__,
         server=server,

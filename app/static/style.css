@@ -1,3 +1,14 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins');
+
+body{
+  font-family: 'Poppins', sans-serif;
+  color: #3e3e3e;
+  background-color: #FFFFFF;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  font-size: 15px;
+}
 .path {
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
