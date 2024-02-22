@@ -28,20 +28,20 @@ Last Update: {{ date }}
         <tr>
           <td>{{ project }}</td>
           {% if projects[project]['status']=="success" %}
-          <td><img src="{{url_for('static', filename='green.svg')}}" style="width: 20px"></td>
+          <td><img src="{{url_for('constellation.send_assets', filename='green.svg')}}" style="width: 20px"></td>
           {% elif projects[project]['status']=="failure" %}
-          <td><img src="{{url_for('static', filename='red.svg')}}" style="width: 20px"></td>
+          <td><img src="{{url_for('constellation.send_assets', filename='red.svg')}}" style="width: 20px"></td>
           {% else %}
           <td>{{ projects[project]['status'] }}</td>
           {% endif %}
           <td>
             {% for check in projects[project]['checks'] %}
             {% if check['status']=="success" %}
-            <div class="tooltip_check"> <img src="{{url_for('static', filename='green.svg')}}" style="width: 20px"><span class="tooltiptext_check">{{ check['name'] }}</span></div>
+            <div class="tooltip_check"> <img src="{{url_for('constellation.send_assets', filename='green.svg')}}" style="width: 20px"><span class="tooltiptext_check">{{ check['name'] }}</span></div>
             {% elif check['status']=="failure" %}
-            <div class="tooltip_check"> <img src="{{url_for('static', filename='red.svg')}}" style="width: 20px"><span class="tooltiptext_check">{{ check['name'] }}</span></div>
+            <div class="tooltip_check"> <img src="{{url_for('constellation.send_assets', filename='red.svg')}}" style="width: 20px"><span class="tooltiptext_check">{{ check['name'] }}</span></div>
             {% else %}
-            <div class="tooltip_check"> <img src="{{url_for('static', filename='skipped.svg')}}" style="width: 20px"><span class="tooltiptext_check">{{ check['name'] }}</span></div>
+            <div class="tooltip_check"> <img src="{{url_for('constellation.send_assets', filename='skipped.svg')}}" style="width: 20px"><span class="tooltiptext_check">{{ check['name'] }}</span></div>
             {% endif %}
             {% endfor %}
           </td>

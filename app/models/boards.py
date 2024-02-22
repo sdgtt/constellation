@@ -1,6 +1,6 @@
-from models.boot_tests import BootTest
-from models.data_types import BoardStatus
-from models.db import DB
+from app.models.boot_tests import BootTest
+from app.models.data_types import BoardStatus
+from app.models.db import DB
 
 
 class Board(BootTest):
@@ -50,7 +50,7 @@ class Boards:
         self.db = DB()
         # get list of boards
         boards = self.db.search(
-            agg_field="boot_folder_name",
+            agg_field="boot_folder_name.keyword",
             jenkins_project_name=jenkins_project_name,
             source_adjacency_matrix=source_adjacency_matrix,
         )["aggregates"]
