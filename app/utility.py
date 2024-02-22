@@ -116,3 +116,56 @@ def filter_gen(query):
                 field_value = field.split("=")[1]
                 filter_dict.update({field_name: field_value.split(",")})
     return filter_dict
+
+def append_url_to_dict(
+        boot_test_dict,
+        jenkins_url="locahost",
+        jenkins_port=None,
+        jenkins_base_path="/jenkins"
+    ):
+    # print(boot_test_dict)
+    url_dict = url_gen(
+        jenkins_server=jenkins_url,
+        jenkins_port=jenkins_port,
+        jenkins_base_path=jenkins_base_path,
+        project_name=boot_test_dict["jenkins_project_name"],
+        build_number=boot_test_dict["jenkins_build_number"],
+        board=boot_test_dict["boot_folder_name"],
+        hdl_commit=boot_test_dict["hdl_hash"].split()[0],
+        linux_commit=boot_test_dict["linux_hash"].split()[0],
+        trigger=boot_test_dict["jenkins_trigger"],
+    )
+    artifacts_url_dict = artifact_url_gen(
+        jenkins_server=jenkins_url,
+        jenkins_port=jenkins_port,
+        project_name=boot_test_dict["jenkins_project_name"],
+        build_number=boot_test_dict["jenkins_build_number"],
+        board=boot_test_dict["boot_folder_name"],
+        jenkins_base_path=jenkins_base_path,
+    )
+    url_dict.update(artifacts_url_dict)
+    for field, url_value in url_dict.items():
+        boot_test_dict.update(
+            {
+                field.lower().replace(" ", "_") + "_url": url_value
+            }
+        )
+    return boot_test_dict
+
+def result_json_url(
+        result_json,
+        jenkins_url="locahost",
+        jenkins_port=None,
+        jenkins_base_path="/jenkins"
+    ):
+    new_result_json = {}
+    for k,v in result_json.items():
+        if k in ["hits"]:
+            new_v = []
+            for el in v:
+                new_el = append_url_to_dict(el, jenkins_url, jenkins_port, jenkins_base_path)
+                new_v.append(new_el)
+            new_result_json[k] = new_v
+        else:
+            new_result_json[k] = v
+    return new_result_json
