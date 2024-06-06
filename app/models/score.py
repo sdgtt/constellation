@@ -361,7 +361,7 @@ class Score:
 
 
 if __name__ == "__main__":
-    sc = Score(size=7, branch="boot_partition_master")
+    sc = Score(size=7, branch="boot_partition_main")
     # print(sc.boot_tests)
     # print(sc.boards)
     # print(sc.builds)
