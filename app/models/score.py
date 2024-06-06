@@ -27,7 +27,7 @@ class Score:
         self,
         jenkins_project="HW_tests/HW_test_multiconfig",
         size=2,
-        branch="boot_partition_master",
+        branch="boot_partition_main",
         board=None,
         deprecated=[],
         offset=0,

@@ -105,8 +105,8 @@ def board_api(board_name, param=None):
 @server_bp.route("api/sc/<param>")
 def score_api(param=None):
     default_jenkins_project = "HW_tests/HW_test_multiconfig"
-    default_branch = "boot_partition_master"
-    default_size = 7
+    default_branch = "boot_partition_main"
+    # default_size = 7
     default_offset = 0 
     filters = filter_gen(urlparse(unquote(request.url)).query)
     jenkins_project = (
@@ -114,14 +114,14 @@ def score_api(param=None):
         if "jenkins_project" in filters
         else default_jenkins_project
     )
-    size = filters["size"][0] if "size" in filters else default_size
+    # size = filters["size"][0] if "size" in filters else default_size
     offset = filters["offset"][0] if "offset" in filters else default_offset
     board = filters["board"][0] if "board" in filters else None
     branch = filters["branch"][0] if "branch" in filters else default_branch
     deprecated = []
     sc = Score(
         jenkins_project=jenkins_project,
-        size=int(size),
+        # size=int(size),
         branch=branch,
         board=board,
         deprecated=deprecated,
@@ -135,7 +135,7 @@ def allboards():
     # retrieve boards from elastic server
     # filter by jenkins_project_name
     jenkins_project_name = "HW_tests/HW_test_multiconfig"
-    source_adjacency_matrix = "boot_partition_master"
+    source_adjacency_matrix = "boot_partition_main"
     deprecated = []
     boards_ref = b.Boards(
         jenkins_project_name, source_adjacency_matrix, deprecated
