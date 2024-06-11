@@ -105,7 +105,7 @@ def board_api(board_name, param=None):
 @server_bp.route("api/sc/<param>")
 def score_api(param=None):
     default_jenkins_project = "HW_tests/HW_test_multiconfig"
-    default_branch = "boot_partition_main"
+    default_branch = ""
     default_size = 7
     default_offset = 0 
     filters = filter_gen(urlparse(unquote(request.url)).query)

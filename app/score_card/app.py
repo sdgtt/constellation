@@ -694,7 +694,7 @@ def report_tabs(data, active_tab="t_summary"):
 def generate_report_tabs(data):
     return html.Div(
         id="sc_report_div",
-        style = {},
+        style = { "margin-left": "2%", "margin-right": "2%"},
         children=[
             report_tabs(data)
         ]
