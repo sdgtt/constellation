@@ -200,7 +200,9 @@ class Score:
             ]:
                 if isinstance(report[bn][test]["data"], list):
                     try:
-                        assert report[bn][test]["count"] == len(report[bn][test]["data"])
+                        assert report[bn][test]["count"] == len(
+                            report[bn][test]["data"]
+                        )
                     except Exception as e:
                         print(f"Inconsistency in build {bn} on test {test}")
                         print(report[bn][test])
@@ -210,7 +212,7 @@ class Score:
                     for k, boards in report[bn][test]["data"].items():
                         for board in boards:
                             count += 1
-                    try:         
+                    try:
                         assert report[bn][test]["count"] == count
                     except Exception as e:
                         print(f"Inconsistency in build {bn} on test {test}")

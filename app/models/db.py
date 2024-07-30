@@ -23,6 +23,7 @@ KEYWORDS = [
     "last_failing_stage",
 ]
 
+
 class DB:
     def __init__(
         self,
@@ -30,7 +31,7 @@ class DB:
         username=USERNAME,
         password=PASSWORD,
         index_name=INDEX,
-        keywords=KEYWORDS
+        keywords=KEYWORDS,
     ):
         retries = 0
         while True:
@@ -42,7 +43,7 @@ class DB:
                     password=password,
                     index_name=index_name,
                 )
-                self.keywords=keywords
+                self.keywords = keywords
                 break
             except Exception as e:
                 print("Server not yet ready")
@@ -57,7 +58,7 @@ class DB:
         sort="jenkins_job_date",
         order="desc",
         agg_field=None,
-        **kwargs
+        **kwargs,
     ):
         result = {"hits": [], "aggregates": [], "aggregates_top": []}
         if kwargs:
@@ -85,11 +86,15 @@ class DB:
         if agg_field:
             for row in res["aggregations"][agg_field]["buckets"]:
                 result["aggregates"].append(row["key"])
-                
+
                 agg_field_data = {}
                 # get top data for the aggregated field
                 for row_data in result["hits"]:
-                    agg_field = agg_field.split(".keyword")[0] if "keyword" in agg_field else agg_field
+                    agg_field = (
+                        agg_field.split(".keyword")[0]
+                        if "keyword" in agg_field
+                        else agg_field
+                    )
                     if row_data[agg_field] == row["key"]:
                         agg_field_data = row_data
                         break
@@ -114,7 +119,7 @@ if __name__ == "__main__":
             elastic_server="primary.englab",
             username="",
             password="",
-            index_name="boot_tests"
+            index_name="boot_tests",
         )
         result = db.search(
             size=1,
@@ -122,3 +127,4 @@ if __name__ == "__main__":
             order="desc",
             agg_field="boot_folder_name.keyword",
         )
+        assert result

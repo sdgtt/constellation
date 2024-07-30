@@ -117,12 +117,13 @@ def filter_gen(query):
                 filter_dict.update({field_name: field_value.split(",")})
     return filter_dict
 
+
 def append_url_to_dict(
-        boot_test_dict,
-        jenkins_url="locahost",
-        jenkins_port=None,
-        jenkins_base_path="/jenkins"
-    ):
+    boot_test_dict,
+    jenkins_url="localhost",
+    jenkins_port=None,
+    jenkins_base_path="/jenkins",
+):
     # print(boot_test_dict)
     url_dict = url_gen(
         jenkins_server=jenkins_url,
@@ -145,25 +146,24 @@ def append_url_to_dict(
     )
     url_dict.update(artifacts_url_dict)
     for field, url_value in url_dict.items():
-        boot_test_dict.update(
-            {
-                field.lower().replace(" ", "_") + "_url": url_value
-            }
-        )
+        boot_test_dict.update({field.lower().replace(" ", "_") + "_url": url_value})
     return boot_test_dict
 
+
 def result_json_url(
-        result_json,
-        jenkins_url="locahost",
-        jenkins_port=None,
-        jenkins_base_path="/jenkins"
-    ):
+    result_json,
+    jenkins_url="localhost",
+    jenkins_port=None,
+    jenkins_base_path="/jenkins",
+):
     new_result_json = {}
-    for k,v in result_json.items():
+    for k, v in result_json.items():
         if k in ["hits"]:
             new_v = []
             for el in v:
-                new_el = append_url_to_dict(el, jenkins_url, jenkins_port, jenkins_base_path)
+                new_el = append_url_to_dict(
+                    el, jenkins_url, jenkins_port, jenkins_base_path
+                )
                 new_v.append(new_el)
             new_result_json[k] = new_v
         else:

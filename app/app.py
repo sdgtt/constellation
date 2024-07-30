@@ -1,3 +1,4 @@
+import os
 from urllib.parse import unquote, urlparse
 
 from app.models import boards as b
@@ -7,7 +8,13 @@ from app.models.score import Score
 from app.pages.hwtests import allboards as ab
 from app.pages.publicci.dashboard import Dashboard
 from app.pages.pyadi.plots import gen_line_plot_html
-from app.utility import artifact_url_gen, filter_gen, url_gen, result_json_url, append_url_to_dict
+from app.utility import (
+    append_url_to_dict,
+    artifact_url_gen,
+    filter_gen,
+    result_json_url,
+    url_gen,
+)
 from flask import (
     Blueprint,
     Flask,
@@ -20,14 +27,15 @@ from flask import (
     url_for,
 )
 from flask.helpers import get_root_path
-import os
 
 # from junit2htmlreport import parser
 
 # app = Flask(__name__)
 server_bp = Blueprint("constellation", __name__)
 
-JENKINS_SERVER = "jenkinsci" if "JENKINS_SERVER" not in os.environ else os.environ["JENKINS_SERVER"]
+JENKINS_SERVER = (
+    "jenkinsci" if "JENKINS_SERVER" not in os.environ else os.environ["JENKINS_SERVER"]
+)
 JENKINS_PORT = None
 
 pci_dash = Dashboard(
@@ -97,7 +105,9 @@ def board_api(board_name, param=None):
         for k, v in boot_test.items():
             if k not in ["boot_test_failure", "raw_boot_test_result"]:
                 new_dict.update({k: v})
-        boot_test_filtered.append(append_url_to_dict(new_dict, jenkins_url=JENKINS_SERVER))
+        boot_test_filtered.append(
+            append_url_to_dict(new_dict, jenkins_url=JENKINS_SERVER)
+        )
     return {"hits": boot_test_filtered}
 
 
@@ -107,7 +117,7 @@ def score_api(param=None):
     default_jenkins_project = "HW_tests/HW_test_multiconfig"
     default_branch = ""
     default_size = 7
-    default_offset = 0 
+    default_offset = 0
     filters = filter_gen(urlparse(unquote(request.url)).query)
     jenkins_project = (
         filters["jenkins_project"][0]
@@ -125,7 +135,7 @@ def score_api(param=None):
         branch=branch,
         board=board,
         deprecated=deprecated,
-        offset = int(offset)
+        offset=int(offset),
     )
     return sc.to_json()
 
