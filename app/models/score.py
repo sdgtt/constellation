@@ -27,7 +27,7 @@ class Score:
         self,
         jenkins_project="HW_tests/HW_test_multiconfig",
         size=2,
-        branch="boot_partition_master",
+        branch="boot_partition_main",
         board=None,
         deprecated=[],
         offset=0,
@@ -200,7 +200,9 @@ class Score:
             ]:
                 if isinstance(report[bn][test]["data"], list):
                     try:
-                        assert report[bn][test]["count"] == len(report[bn][test]["data"])
+                        assert report[bn][test]["count"] == len(
+                            report[bn][test]["data"]
+                        )
                     except Exception as e:
                         print(f"Inconsistency in build {bn} on test {test}")
                         print(report[bn][test])
@@ -210,7 +212,7 @@ class Score:
                     for k, boards in report[bn][test]["data"].items():
                         for board in boards:
                             count += 1
-                    try:         
+                    try:
                         assert report[bn][test]["count"] == count
                     except Exception as e:
                         print(f"Inconsistency in build {bn} on test {test}")
@@ -361,7 +363,7 @@ class Score:
 
 
 if __name__ == "__main__":
-    sc = Score(size=7, branch="boot_partition_master")
+    sc = Score(size=7, branch="boot_partition_main")
     # print(sc.boot_tests)
     # print(sc.boards)
     # print(sc.builds)

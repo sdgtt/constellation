@@ -194,7 +194,6 @@ class BoardBootTests:
                     }
                 )
         return builds_dict
-       
 
     def latest_builds_boards(self, size, offset=0):
         boards = []

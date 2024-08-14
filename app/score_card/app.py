@@ -3,12 +3,12 @@
 
 from datetime import date, datetime, timedelta
 
+import dash
 import dash_bootstrap_components as dbc
 import dash_dangerously_set_inner_html
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import dash
 from dash import Input, Output, State, dash_table, dcc, html
 from flask import Markup
 
@@ -139,14 +139,9 @@ def get_fig_logs(data):
         ]
     )
     fig.update_layout(
-        barmode="stack", 
+        barmode="stack",
         title="Boot Logs Turnout",
-        legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01
-        ),
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
         margin=dict(l=20, r=20),
     )
     return fig
@@ -179,14 +174,9 @@ def get_fig_booted(data):
         ]
     )
     fig.update_layout(
-        barmode="stack", 
+        barmode="stack",
         title="Boot Histogram",
-        legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01
-        ),
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
         margin=dict(l=20, r=20),
     )
     return fig
@@ -213,14 +203,9 @@ def get_fig_linux(data):
         ]
     )
     fig.update_layout(
-        barmode="stack", 
+        barmode="stack",
         title="IIO Devices",
-        legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01
-        ),
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
         margin=dict(l=20, r=20),
     )
     return fig
@@ -247,14 +232,9 @@ def get_fig_dmesg(data):
         ]
     )
     fig.update_layout(
-        barmode="stack", 
+        barmode="stack",
         title="DMESG Errors",
-        legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01
-        ),
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
         margin=dict(l=20, r=20),
     )
     return fig
@@ -295,14 +275,9 @@ def get_fig_pyadi(data):
         ]
     )
     fig.update_layout(
-        barmode="stack", 
+        barmode="stack",
         title="PYADI-IIO Tests",
-        legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01
-        ),
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
         margin=dict(l=20, r=20),
     )
     return fig
@@ -320,9 +295,10 @@ def generate_logo():
             html.H3("Kuiper Linux CT Score Card"),
         ],
         id="sc_logo_div",
-        style={},
+        style={"font-size": "15px"},
     )
     return sc_logo_div
+
 
 def generate_filters_offcanvas(data):
     offcanvas = html.Div(
@@ -338,31 +314,35 @@ def generate_filters_offcanvas(data):
         style={
             "position": "absolute",
             "right": "0%",
-            "bottom": "0%"
-        }
+            "bottom": "0%",
+            "font-size": "15px",
+        },
     )
     return offcanvas
+
 
 def generate_header(data):
     header_div = html.Div(
         [
             dbc.Row(
                 [
-                    dbc.Col(generate_logo(), width=10),
+                    # dbc.Col(generate_logo(), width=10),
                     dbc.Col(generate_filters_offcanvas(data), width=2),
                 ],
                 align="start",
             ),
         ],
         style={
-            "margin-left":"10%",
-            "margin-right":"10%",
+            "margin-left": "2%",
+            "margin-right": "2%",
             "margin-top": "3%",
             "position": "relative",
-        }
+            "font-size": "15px",
+        },
     )
 
     return header_div
+
 
 def generate_options(data):
 
@@ -374,7 +354,7 @@ def generate_options(data):
                 type="text",
                 placeholder="Jenkins project name",
                 value="HW_tests/HW_test_multiconfig",
-                style={"width": "100%"},
+                style={"width": "100%", "font-size": "15px"},
             ),
             html.H5("Branch"),
             dcc.Dropdown(
@@ -408,7 +388,7 @@ def generate_options(data):
                 max=10,
                 placeholder="No. of builds to Analyze",
                 value=7,
-                style={"width": "100%"},
+                style={"width": "100%", "font-size": "15px"},
             ),
             html.H5("Offset"),
             dcc.Input(
@@ -418,7 +398,7 @@ def generate_options(data):
                 max=20,
                 placeholder="No. of builds from the latest to analyze",
                 value=0,
-                style={"width": "100%"},
+                style={"width": "100%", "font-size": "15px"},
             ),
             html.H5("Board"),
             dcc.Dropdown(
@@ -484,13 +464,10 @@ def generate_dash_table(data, target, groupby="item"):
         style_cell={
             "textAlign": "left",
             "vertical-align": "top",
-            "font-family":"var(--bs-body-font-family)",
-            "font-size":"var(--bs-body-font-size)",
             "font-weight": "var(--bs-body-font-weight)",
         },
         style_header={
-            "backgroundColor": "#D3D3D3",
-            "color": "black",
+            "color": "3e3e3e",
         },
         data=data_processed,
         columns=cols,
@@ -501,24 +478,27 @@ def generate_dash_table(data, target, groupby="item"):
 def generate_top_boot_failing(data):
 
     tabs = dbc.Tabs(
-                [
-                    dbc.Tab(
-                        generate_dash_table(data, "not_booted", "board"),
-                        tab_id="tab-1",
-                        label="Failing Boards (Non Booting)",
-                    ),
-                    dbc.Tab(generate_dash_table(data, "not_booted"),
-                    tab_id="tab-2",
-                    label="Failures"),
-                ],
-                active_tab="tab-1",
-            )
+        [
+            dbc.Tab(
+                generate_dash_table(data, "not_booted", "board"),
+                tab_id="tab-1",
+                label="Failing Boards (Non Booting)",
+            ),
+            dbc.Tab(
+                generate_dash_table(data, "not_booted"),
+                tab_id="tab-2",
+                label="Failures",
+            ),
+        ],
+        active_tab="tab-1",
+    )
     style = {"margin-top": "2%", "margin-bottom": "2%"}
     top_boot_failing_div = dbc.Row(
         children=[
             dbc.Col(tabs, style=style, width=8),
             dbc.Col(
-                dcc.Graph(id="g_boot_test_summary", figure=get_fig_booted(data)),width=4
+                dcc.Graph(id="g_boot_test_summary", figure=get_fig_booted(data)),
+                width=4,
             ),
         ],
         id="top_boot_failing_div",
@@ -528,26 +508,27 @@ def generate_top_boot_failing(data):
 
 def generate_drivers_enumeration(data):
     tabs = dbc.Tabs(
-            [
-                dbc.Tab(
-                        generate_dash_table(data, "drivers_missing", "board"),
-                        tab_id="tab-1",
-                        label="Failing Boards (Failed Device Enumeration)",
-                    ),
-                dbc.Tab(
-                    generate_dash_table(data, "drivers_missing"),
-                    tab_id="tab-2",
-                    label="Missing Drivers",
-                ),
-            ],
-            active_tab="tab-1"
-        )
+        [
+            dbc.Tab(
+                generate_dash_table(data, "drivers_missing", "board"),
+                tab_id="tab-1",
+                label="Failing Boards (Failed Device Enumeration)",
+            ),
+            dbc.Tab(
+                generate_dash_table(data, "drivers_missing"),
+                tab_id="tab-2",
+                label="Missing Drivers",
+            ),
+        ],
+        active_tab="tab-1",
+    )
     style = {"margin-top": "2%", "margin-bottom": "2%"}
     drivers_enumeration_div = dbc.Row(
         children=[
             dbc.Col(tabs, style=style, width=8),
             dbc.Col(
-                dcc.Graph(id="g_linux_test_summary", figure=get_fig_linux(data)),width=4
+                dcc.Graph(id="g_linux_test_summary", figure=get_fig_linux(data)),
+                width=4,
             ),
         ],
         id="drivers_enumeration_div",
@@ -569,14 +550,15 @@ def generate_dmesg_errors(data):
                 label="Dmeg Errors",
             ),
         ],
-        active_tab="tab-1"
+        active_tab="tab-1",
     )
     style = {"margin-top": "2%", "margin-bottom": "2%"}
     dmesg_errors_div = dbc.Row(
         children=[
             dbc.Col(tabs, style=style, width=8),
             dbc.Col(
-                dcc.Graph(id="g_linux_dmesg_summary", figure=get_fig_dmesg(data)),width=4
+                dcc.Graph(id="g_linux_dmesg_summary", figure=get_fig_dmesg(data)),
+                width=4,
             ),
         ],
         id="dmesg_errors_div",
@@ -603,15 +585,14 @@ def generate_pytest_results(data):
                 tab_id="tab-3",
                 label="PyADI IIO Skipped",
             ),
-        ], active_tab="tab-1"
+        ],
+        active_tab="tab-1",
     )
     style = {"margin-top": "2%", "margin-bottom": "2%"}
     pyadi_test_div = dbc.Row(
         children=[
             dbc.Col(tabs, style=style, width=8),
-            dbc.Col(
-                dcc.Graph(id="g_pyadi_test", figure=get_fig_pyadi(data)),width=4
-            ),
+            dbc.Col(dcc.Graph(id="g_pyadi_test", figure=get_fig_pyadi(data)), width=4),
         ],
         id="pyadi_test_div",
     )
@@ -656,7 +637,8 @@ def generate_panel(data):
             dbc.Col(
                 [
                     dbc.Row(dcc.Graph(id="g_logs_turnout", figure=get_fig_logs(data))),
-                ], width=4
+                ],
+                width=4,
             ),
         ],
         justify="between",
@@ -664,42 +646,52 @@ def generate_panel(data):
     )
     return sc_panel_div
 
-def generate_report(data):
-    report_div = generate_summaries(data)
-    return report_div
 
 def report_tabs(data, active_tab="t_summary"):
 
-    tabs = dbc.Tabs([
-                    dbc.Tab(label='Summaries', tab_id="t_summary", children=[
-                        generate_panel(data)
-                    ]),
-                    dbc.Tab(label='Boot Test', tab_id="t_boot_test", children=[
-                        generate_top_boot_failing(data),
-                    ]),
-                    dbc.Tab(label='Linux Test - IIO Drivers', tab_id="t_iio", children=[
-                        generate_drivers_enumeration(data)
-                    ]),
-                    dbc.Tab(label='Linux Test - DMESG', tab_id="t_dmesg", children=[
-                        generate_dmesg_errors(data),
-                    ]),
-                    dbc.Tab(label='PYADI-IIO Tests', tab_id="t_pyadi", children=[
-                        generate_pytest_results(data)
-                    ]),
-            ],
-            active_tab=active_tab,
-            id="sc_report_tab"
-        )
+    tabs = dbc.Tabs(
+        [
+            dbc.Tab(
+                label="Summaries", tab_id="t_summary", children=[generate_panel(data)]
+            ),
+            dbc.Tab(
+                label="Boot Test",
+                tab_id="t_boot_test",
+                children=[
+                    generate_top_boot_failing(data),
+                ],
+            ),
+            dbc.Tab(
+                label="Linux Test - IIO Drivers",
+                tab_id="t_iio",
+                children=[generate_drivers_enumeration(data)],
+            ),
+            dbc.Tab(
+                label="Linux Test - DMESG",
+                tab_id="t_dmesg",
+                children=[
+                    generate_dmesg_errors(data),
+                ],
+            ),
+            dbc.Tab(
+                label="PYADI-IIO Tests",
+                tab_id="t_pyadi",
+                children=[generate_pytest_results(data)],
+            ),
+        ],
+        active_tab=active_tab,
+        id="sc_report_tab",
+    )
     return tabs
+
 
 def generate_report_tabs(data):
     return html.Div(
         id="sc_report_div",
-        style = {"width": "80%", "margin": "auto"},
-        children=[
-            report_tabs(data)
-        ]
+        style={"margin-left": "2%", "margin-right": "2%"},
+        children=[report_tabs(data)],
     )
+
 
 ########################### Callbacks #####################################
 
@@ -713,13 +705,15 @@ def register_callbacks(app):
             Input("sc_size_options", "value"),
             Input("sc_board_options", "value"),
             Input("sc_offset_options", "value"),
-            Input("sc_report_tab","active_tab"),
+            Input("sc_report_tab", "active_tab"),
         ],
     )
     def update_report(project, branch, size, board, offset, active_tab):
         return report_tabs(
-            request_data(project=project, branch=branch, size=size, board=board, offset=offset),
-            active_tab=active_tab
+            request_data(
+                project=project, branch=branch, size=size, board=board, offset=offset
+            ),
+            active_tab=active_tab,
         )
 
     @app.callback(
@@ -741,5 +735,5 @@ layout = html.Div(
         generate_report_tabs(request_data()),
     ],
     id="main_panel",
-    style={}
+    style={"font-size": "15px"},
 )

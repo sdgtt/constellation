@@ -9,7 +9,7 @@ class Artifact:
         "job_build_parameters",
         "file_name",
         "target_board",
-        "artifact_info_type"
+        "artifact_info_type",
     ]
 
     def __init__(self, raw_artifact_result=None):
@@ -48,7 +48,7 @@ class Artifact:
 class Artifacts:
     def __init__(self, **filters):
 
-        self.db = DB(index_name="artifacts",keywords=Artifact.KEYWORDS)
+        self.db = DB(index_name="artifacts", keywords=Artifact.KEYWORDS)
         db_res = self.db.search(sort="archive_date", **filters)
         # create boards object from raw db_res
         self._artifacts = [Artifact(row) for row in db_res["hits"]]
