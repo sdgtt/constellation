@@ -1,7 +1,20 @@
-from models.db import DB
+from app.models.db import DB
 
 
 class BootTest:
+
+    KEYWORDS = [
+        "boot_folder_name",
+        "hdl_branch",
+        "linux_branch",
+        "boot_partition_branch",
+        "jenkins_project_name",
+        "jenkins_agent",
+        "jenkins_trigger",
+        "source_adjacency_matrix",
+        "last_failing_stage",
+    ]
+
     def __init__(self, raw_boot_test_result=None):
         self.raw_boot_test_result = raw_boot_test_result
         self.__initialize_fields()
@@ -35,6 +48,10 @@ class BootTest:
             "pytest_failures",
             "pytest_skipped",
             "pytest_tests",
+            "matlab_errors",
+            "matlab_failures",
+            "matlab_skipped",
+            "matlab_tests",
             "last_failing_stage",
             "last_failing_stage_failure",
         ]
@@ -56,6 +73,10 @@ class BootTest:
                         "pytest_failures",
                         "pytest_skipped",
                         "pytest_tests",
+                        "matlab_errors",
+                        "matlab_failures",
+                        "matlab_skipped",
+                        "matlab_tests",
                     ]:
                         setattr(self, f, "0")
                     else:
@@ -111,14 +132,30 @@ class BootTest:
 
 
 class BoardBootTests:
-    def __init__(self, boot_folder_name, jenkins_project_name=None, filters=None):
+    def __init__(
+        self,
+        sort="jenkins_job_date",
+        order="desc",
+        agg_field=None,
+        boot_folder_name=None,
+        jenkins_project_name=None,
+        jenkins_build_number=None,
+        source_adjacency_matrix=None,
+        filters=None,
+    ):
 
-        if not boot_folder_name:
-            raise ValueError("boot_folder_name must not be null or empty")
+        # if not boot_folder_name:
+        #     raise ValueError('boot_folder_name must not be null or empty')
 
         self.db = DB()
         db_res = self.db.search(
-            boot_folder_name=boot_folder_name, jenkins_project_name=jenkins_project_name
+            sort=sort,
+            order=order,
+            agg_field=agg_field,
+            boot_folder_name=boot_folder_name,
+            jenkins_project_name=jenkins_project_name,
+            jenkins_build_number=jenkins_build_number,
+            source_adjacency_matrix=source_adjacency_matrix,
         )
         # create boards object from raw db_res
         self._boot_tests = [BootTest(row) for row in db_res["hits"]]
@@ -135,9 +172,46 @@ class BoardBootTests:
     def boot_tests(self):
         return self._boot_tests
 
+    def latest_builds(self, size, offset=0):
+        builds = []
+        element_count = 0
+        for bt in self._boot_tests:
+            if bt.jenkins_build_number not in builds:
+                builds.append(bt.jenkins_build_number)
+                element_count += 1
+                if element_count == size + offset:
+                    break
+        qualified_builds = builds[offset::1]
+        builds_dict = {}
+        for bt in self._boot_tests:
+            if bt.jenkins_build_number in qualified_builds:
+                builds_dict.update(
+                    {
+                        bt.jenkins_build_number: {
+                            "jenkins_job_date": bt.jenkins_job_date,
+                            "jenkins_trigger": bt.jenkins_trigger,
+                        }
+                    }
+                )
+        return builds_dict
+
+    def latest_builds_boards(self, size, offset=0):
+        boards = []
+        latest_builds = self.latest_builds(size, offset)
+        for bt in self._boot_tests:
+            if bt.jenkins_build_number in latest_builds:
+                if bt.boot_folder_name not in boards:
+                    boards.append(bt.boot_folder_name)
+        return boards
+
     @property
     def boot_tests_dict(self):
         self._boot_tests_dict = []
         for bt in self._boot_tests:
             self._boot_tests_dict.append(bt.display())
         return self._boot_tests_dict
+
+
+if __name__ == "__main__":
+    bt = BoardBootTests(jenkins_project_name="HW_tests/HW_test_multiconfig")
+    print(bt.latest_builds(size=7))
