@@ -547,7 +547,7 @@ def generate_dmesg_errors(data):
             dbc.Tab(
                 generate_dash_table(data, "dmesg_errors_found"),
                 tab_id="tab-2",
-                label="Dmeg Errors",
+                label="Dmesg Errors",
             ),
         ],
         active_tab="tab-1",

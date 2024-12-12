@@ -175,7 +175,7 @@ class Score:
                                             "pytest_skipped",
                                         ]:
                                             if not ar.payload_param == "NA":
-                                                entry += "(" + ar.payload_param + ")"
+                                                entry += "("+ str(ar.payload_param) +")"
                                         if entry in report[bn][test]["data"]:
                                             report[bn][test]["data"][entry].append(
                                                 details
@@ -194,9 +194,9 @@ class Score:
                 "drivers_missing",
                 "dmesg_warnings_found",
                 "dmesg_errors_found",
-                "pytest_errors",
-                "pytest_failures",
-                "pytest_skipped",
+                # "pytest_errors",
+                # "pytest_failures",
+                # "pytest_skipped",
             ]:
                 if isinstance(report[bn][test]["data"], list):
                     try:
