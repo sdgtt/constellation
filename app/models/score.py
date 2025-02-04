@@ -175,7 +175,7 @@ class Score:
                                             "pytest_skipped",
                                         ]:
                                             if not ar.payload_param == "NA":
-                                                entry += "("+ str(ar.payload_param) +")"
+                                                entry += "(" + str(ar.payload_param) + ")"
                                         if entry in report[bn][test]["data"]:
                                             report[bn][test]["data"][entry].append(
                                                 details
