@@ -45,7 +45,7 @@ def url_gen(
         if trigger_dict[0] == "auto":
             trigger_project_name = trigger_dict[1].split("/")[0]
             trigger_build_number = trigger_dict[2]
-            url_trigger = "http://{}/job/{}/{}/".format(
+            url_trigger = "http://{}/view/all/job/Triggers/job/{}/{}/".format(
                 jenkins_server, trigger_project_name, trigger_build_number
             )
     else:
