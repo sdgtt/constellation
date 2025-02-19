@@ -2,7 +2,6 @@ from app.models.db import DB
 
 
 class BootTest:
-
     KEYWORDS = [
         "boot_folder_name",
         "hdl_branch",
@@ -20,7 +19,6 @@ class BootTest:
         self.__initialize_fields()
 
     def __initialize_fields(self):
-
         fields = [
             "boot_folder_name",
             "hdl_hash",
@@ -143,7 +141,6 @@ class BoardBootTests:
         source_adjacency_matrix=None,
         filters=None,
     ):
-
         # if not boot_folder_name:
         #     raise ValueError('boot_folder_name must not be null or empty')
 

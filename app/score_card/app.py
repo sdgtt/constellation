@@ -345,7 +345,6 @@ def generate_header(data):
 
 
 def generate_options(data):
-
     options_div = html.Div(
         children=[
             html.H5("Project"),
@@ -421,7 +420,6 @@ def generate_options(data):
 
 
 def generate_dash_table(data, target, groupby="item"):
-
     latest_build = list(data["builds"].keys())[0]
     label = " ".join([ele.title() for ele in target.split("_")])
 
@@ -476,7 +474,6 @@ def generate_dash_table(data, target, groupby="item"):
 
 
 def generate_top_boot_failing(data):
-
     tabs = dbc.Tabs(
         [
             dbc.Tab(
@@ -547,7 +544,7 @@ def generate_dmesg_errors(data):
             dbc.Tab(
                 generate_dash_table(data, "dmesg_errors_found"),
                 tab_id="tab-2",
-                label="Dmeg Errors",
+                label="Dmesg Errors",
             ),
         ],
         active_tab="tab-1",
@@ -567,7 +564,6 @@ def generate_dmesg_errors(data):
 
 
 def generate_pytest_results(data):
-
     tabs = dbc.Tabs(
         [
             dbc.Tab(
@@ -648,7 +644,6 @@ def generate_panel(data):
 
 
 def report_tabs(data, active_tab="t_summary"):
-
     tabs = dbc.Tabs(
         [
             dbc.Tab(

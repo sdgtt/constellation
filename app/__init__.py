@@ -7,7 +7,7 @@ from flask_cors import CORS
 
 def create_app():
     server = Flask(__name__)
-    CORS(server)
+    CORS(server, resources={r"/*": {"origins": "*"}})
 
     register_dashapps(server)
     # register_extensions(server)
