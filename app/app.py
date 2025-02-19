@@ -25,6 +25,7 @@ from flask import (
     request,
     send_from_directory,
     url_for,
+    cross_origin,
 )
 from flask.helpers import get_root_path
 
@@ -91,6 +92,7 @@ def api(param=None):
 
 @server_bp.route("api/board/<board_name>/")
 @server_bp.route("api/board/<board_name>/<param>")
+@cross_origin()
 def board_api(board_name, param=None):
     boot_test_filtered = []
     jenkins_project_name = "HW_tests/HW_test_multiconfig"
