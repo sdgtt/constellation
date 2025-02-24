@@ -2,12 +2,12 @@ from flask import Flask
 from flask.helpers import get_root_path
 from dash import Dash
 import dash_bootstrap_components as dbc
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 
 def create_app():
     server = Flask(__name__)
-    CORS(server, resources={r"/api/*": {"origins": "*"}})
+    CORS(server, resources={r"/api/*": {"origins": ["http://localhost:4200", "https://10.116.110.150/constellation/api","http://10.116.110.150/constellation/api"]}})
 
     register_dashapps(server)
     # register_extensions(server)

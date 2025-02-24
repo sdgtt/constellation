@@ -25,9 +25,10 @@ from flask import (
     request,
     send_from_directory,
     url_for,
-    cross_origin,
 )
 from flask.helpers import get_root_path
+from flask_cors import cross_origin
+
 
 # from junit2htmlreport import parser
 
