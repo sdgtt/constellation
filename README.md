@@ -32,4 +32,4 @@ virtual environment of constellation
 7. Once installed, run the in development mode.
         export FLASK_ENV=development
         export ES=192.168.10.12
-        flask run --host=0.0.0.0 --port=5002
+        flask run --host=0.0.0.0 --port=5000 --cert=./ssl/cert.crt --key=./ssl/cert.key
