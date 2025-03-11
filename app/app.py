@@ -24,16 +24,17 @@ from flask import (
     render_template,
     request,
     send_from_directory,
-    url_for,
+    url_for
 )
 from flask.helpers import get_root_path
-from flask_cors import cross_origin
+from flask_cors import cross_origin,CORS
 
 
 # from junit2htmlreport import parser
 
 # app = Flask(__name__)
 server_bp = Blueprint("constellation", __name__)
+CORS(server_bp, origins=["https://cos.ad.analog.com/constellation/"])
 
 JENKINS_SERVER = (
     "jenkinsci" if "JENKINS_SERVER" not in os.environ else os.environ["JENKINS_SERVER"]
