@@ -2,7 +2,7 @@ from flask import Flask
 from flask.helpers import get_root_path
 from dash import Dash
 import dash_bootstrap_components as dbc
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 
 def create_app():

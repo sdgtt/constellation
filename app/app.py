@@ -24,14 +24,17 @@ from flask import (
     render_template,
     request,
     send_from_directory,
-    url_for,
+    url_for
 )
 from flask.helpers import get_root_path
+from flask_cors import cross_origin,CORS
+
 
 # from junit2htmlreport import parser
 
 # app = Flask(__name__)
 server_bp = Blueprint("constellation", __name__)
+CORS(server_bp)
 
 JENKINS_SERVER = (
     "jenkinsci" if "JENKINS_SERVER" not in os.environ else os.environ["JENKINS_SERVER"]
@@ -91,6 +94,7 @@ def api(param=None):
 
 @server_bp.route("api/board/<board_name>/")
 @server_bp.route("api/board/<board_name>/<param>")
+@cross_origin()
 def board_api(board_name, param=None):
     boot_test_filtered = []
     jenkins_project_name = "HW_tests/HW_test_multiconfig"

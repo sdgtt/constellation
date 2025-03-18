@@ -17,7 +17,6 @@ class Artifact:
         self.__initialize_fields()
 
     def __initialize_fields(self):
-
         fields = [
             "archive_date",
             "url",
@@ -47,7 +46,6 @@ class Artifact:
 
 class Artifacts:
     def __init__(self, **filters):
-
         self.db = DB(index_name="artifacts", keywords=Artifact.KEYWORDS)
         db_res = self.db.search(sort="archive_date", **filters)
         # create boards object from raw db_res
