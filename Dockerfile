@@ -9,8 +9,8 @@ RUN cd telemetry && pip install -r requirements.txt && pip install . && cd ..
 # Copy SSL certificates
 # COPY cos_analog_com.crt ./ssl/cos_analog_com.crt 
 # COPY cos_analog_com.key ./ssl/cos_analog_com.key
-COPY cert.crt ./ssl/cert.crt 
-COPY cert.key ./ssl/cert.key
+# COPY cert.crt ./ssl/cert.crt 
+# COPY cert.key ./ssl/cert.key
 RUN chmod u+x ./entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 EXPOSE 5000
